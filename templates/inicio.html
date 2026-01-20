@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rankings SAFA - Inicio</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    .hero {
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                  url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=2070') center/cover no-repeat;
+    }
+    .card img {
+      object-fit: cover;
+    }
+    .tag {
+      margin-right: 0.35em;
+      margin-bottom: 0.35em;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+  <div class="container">
+    <div class="navbar-brand">
+      <a class="navbar-item has-text-weight-bold is-size-4" href="{% url 'inicio' %}">
+        Rankings SAFA
+      </a>
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+
+    <div id="navbarMenu" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Inicio</a>
+        <a class="navbar-item" href="#">Rankings</a>
+        <a class="navbar-item" href="#">Categorías</a>
+        <a class="navbar-item" href="#">Juegos</a>
+        <div class="navbar-item">
+          <div class="buttons">
+            <a class="button is-primary is-light">Iniciar sesión</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="hero is-medium is-dark">
+  <div class="hero-body has-text-centered">
+    <div class="container">
+      <h1 class="title is-1 mb-5">Rankings SAFA</h1>
+      <h2 class="subtitle is-3 mb-6">Descubre y comparte los mejores videojuegos según la comunidad</h2>
+
+      <div class="field has-addons is-centered">
+        <div class="control is-expanded" style="max-width: 500px;">
+          <input class="input is-medium" type="text" placeholder="Buscar juego, categoría o ranking...">
+        </div>
+        <div class="control">
+          <button class="button is-primary is-medium">
+            <span class="icon"><i class="fas fa-search"></i></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="title is-3 has-text-centered mb-6">Juegos más valorados</h2>
+
+    <div class="columns is-multiline is-variable is-4">
+
+      <div class="column is-3">
+        <div class="card is-fullheight">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg" alt="Elden Ring">
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-5">Elden Ring</p>
+            <p class="subtitle is-6 mb-2">FromSoftware · 2022</p>
+            <div class="tags are-small mb-3">
+              <span class="tag is-dark">RPG</span>
+              <span class="tag is-dark">Acción</span>
+              <span class="tag is-dark">Aventura</span>
+            </div>
+            <p><strong>4.8 ★</strong> · +1200 reseñas</p>
+          </div>
+          <footer class="card-footer">
+            <a href="#" class="card-footer-item">Ver ranking</a>
+          </footer>
+        </div>
+      </div>
+
+      <div class="column is-3">
+        <div class="card is-fullheight">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/1145360/header.jpg" alt="Hades">
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-5">Hades</p>
+            <p class="subtitle is-6 mb-2">Supergiant Games · 2020</p>
+            <div class="tags are-small mb-3">
+              <span class="tag is-dark">Roguelike</span>
+              <span class="tag is-dark">Acción</span>
+            </div>
+            <p><strong>4.9 ★</strong> · +950 reseñas</p>
+          </div>
+          <footer class="card-footer">
+            <a href="#" class="card-footer-item">Ver ranking</a>
+          </footer>
+        </div>
+      </div>
+
+      <div class="column is-3">
+        <div class="card is-fullheight">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/367520/header.jpg" alt="Hollow Knight">
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-5">Hollow Knight</p>
+            <p class="subtitle is-6 mb-2">Team Cherry · 2017</p>
+            <div class="tags are-small mb-3">
+              <span class="tag is-dark">Metroidvania</span>
+              <span class="tag is-dark">Aventura</span>
+            </div>
+            <p><strong>4.7 ★</strong> · +1800 reseñas</p>
+          </div>
+          <footer class="card-footer">
+            <a href="#" class="card-footer-item">Ver ranking</a>
+          </footer>
+        </div>
+      </div>
+
+      <div class="column is-3">
+        <div class="card is-fullheight">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg" alt="Resident Evil 4">
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-5">Resident Evil 4 Remake</p>
+            <p class="subtitle is-6 mb-2">Capcom · 2023</p>
+            <div class="tags are-small mb-3">
+              <span class="tag is-dark">Survival Horror</span>
+              <span class="tag is-dark">Acción</span>
+            </div>
+            <p><strong>4.6 ★</strong> · +700 reseñas</p>
+          </div>
+          <footer class="card-footer">
+            <a href="#" class="card-footer-item">Ver ranking</a>
+          </footer>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="section has-background-dark has-text-light">
+  <div class="container">
+    <h2 class="title is-3 has-text-centered mb-6 has-text-light">Explora por categorías</h2>
+
+    <div class="columns is-multiline is-centered is-variable is-3">
+      <div class="column is-3">
+        <div class="box has-text-centered has-background-grey-darker">
+          <span class="icon is-large mb-3"><i class="fas fa-swords fa-2x"></i></span>
+          <p class="title is-5">RPG</p>
+          <p class="subtitle is-6">Historias épicas y progresión</p>
+        </div>
+      </div>
+      <div class="column is-3">
+        <div class="box has-text-centered has-background-grey-darker">
+          <span class="icon is-large mb-3"><i class="fas fa-gun fa-2x"></i></span>
+          <p class="title is-5">FPS</p>
+          <p class="subtitle is-6">Acción rápida y táctica</p>
+        </div>
+      </div>
+      <div class="column is-3">
+        <div class="box has-text-centered has-background-grey-darker">
+          <span class="icon is-large mb-3"><i class="fas fa-dungeon fa-2x"></i></span>
+          <p class="title is-5">Metroidvania</p>
+          <p class="subtitle is-6">Exploración y backtracking</p>
+        </div>
+      </div>
+      <div class="column is-3">
+        <div class="box has-text-centered has-background-grey-darker">
+          <span class="icon is-large mb-3"><i class="fas fa-skull fa-2x"></i></span>
+          <p class="title is-5">Survival Horror</p>
+          <p class="subtitle is-6">Tensión y supervivencia</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer has-background-dark has-text-light">
+  <div class="content has-text-centered">
+    <p>
+      <strong>Rankings SAFA</strong> © 2026 - Hecho por Ángel Roldán Rabanal
+    </p>
+  </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+    if ($navbarBurgers.length > 0) {
+      $navbarBurgers.forEach( el => {
+        el.addEventListener('click', () => {
+          const target = el.dataset.target;
+          const $target = document.getElementById(target);
+          el.classList.toggle('is-active');
+          $target.classList.toggle('is-active');
+        });
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

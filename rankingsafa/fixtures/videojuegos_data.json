@@ -1,0 +1,236 @@
+{
+  "categorias": [
+    {
+      "id": "cat_001",
+      "nombre": "RPG",
+      "descripcion": "Juegos de rol donde el jugador controla personajes en aventuras épicas con progresión de habilidades"
+    },
+    {
+      "id": "cat_002",
+      "nombre": "FPS",
+      "descripcion": "Juegos de disparos en primera persona centrados en combate con armas"
+    },
+    {
+      "id": "cat_003",
+      "nombre": "Aventura",
+      "descripcion": "Juegos enfocados en exploración, narrativa y resolución de puzzles"
+    },
+    {
+      "id": "cat_004",
+      "nombre": "Estrategia",
+      "descripcion": "Juegos que requieren planificación táctica y gestión de recursos"
+    },
+    {
+      "id": "cat_005",
+      "nombre": "Plataformas",
+      "descripcion": "Juegos donde el personaje salta entre plataformas evitando obstáculos"
+    },
+    {
+      "id": "cat_006",
+      "nombre": "Acción",
+      "descripcion": "Juegos centrados en reflejos rápidos y combate dinámico"
+    },
+    {
+      "id": "cat_007",
+      "nombre": "Sandbox",
+      "descripcion": "Juegos de mundo abierto con gran libertad creativa y exploratoria"
+    },
+    {
+      "id": "cat_008",
+      "nombre": "Survival Horror",
+      "descripcion": "Juegos de terror enfocados en supervivencia con recursos limitados"
+    },
+    {
+      "id": "cat_009",
+      "nombre": "Deportes",
+      "descripcion": "Simulaciones de deportes reales o ficticios"
+    },
+    {
+      "id": "cat_010",
+      "nombre": "Metroidvania",
+      "descripcion": "Juegos de exploración con mapas interconectados y habilidades desbloqueables"
+    }
+  ],
+  "videojuegos": [
+    {
+      "id": "game_001",
+      "nombre": "The Witcher 3: Wild Hunt",
+      "desarrollador": "CD Projekt Red",
+      "publisher": "CD Projekt",
+      "categorias": ["cat_001", "cat_003", "cat_006"],
+      "descripcion": "Épica aventura de Geralt de Rivia en un vasto mundo abierto lleno de monstruos, magia y decisiones morales complejas",
+      "fecha_lanzamiento": "2015-05-19",
+      "plataformas": ["PC", "PlayStation 4", "Xbox One", "Nintendo Switch"],
+      "imagen_url": "https://images.gog-statics.com/5643a7c831df452d29005caeca24c231d2d6b9f9f1e8b8c6e6e6e6e6e6e6e6e6.jpg",
+      "precio_actual": 39.99,
+      "clasificacion_edad": "M",
+      "duracion_aproximada": 50,
+      "multijugador": false
+    },
+    {
+      "id": "game_002",
+      "nombre": "Counter-Strike 2",
+      "desarrollador": "Valve Corporation",
+      "publisher": "Valve Corporation",
+      "categorias": ["cat_002", "cat_006"],
+      "descripcion": "El legendario shooter táctico en equipos renovado con nuevo motor gráfico y mecánicas mejoradas",
+      "fecha_lanzamiento": "2023-09-27",
+      "plataformas": ["PC"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg",
+      "precio_actual": 0.00,
+      "clasificacion_edad": "M",
+      "duracion_aproximada": 999,
+      "multijugador": true
+    },
+    {
+      "id": "game_003",
+      "nombre": "Hollow Knight",
+      "desarrollador": "Team Cherry",
+      "publisher": "Team Cherry",
+      "categorias": ["cat_010", "cat_003", "cat_006"],
+      "descripcion": "Explora un vasto reino de insectos en ruinas con combate preciso y atmosfera inquietante",
+      "fecha_lanzamiento": "2017-02-24",
+      "plataformas": ["PC", "PlayStation 4", "Xbox One", "Nintendo Switch"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/367520/header.jpg",
+      "precio_actual": 14.99,
+      "clasificacion_edad": "E10+",
+      "duracion_aproximada": 30,
+      "multijugador": false
+    },
+    {
+      "id": "game_004",
+      "nombre": "Minecraft",
+      "desarrollador": "Mojang Studios",
+      "publisher": "Microsoft",
+      "categorias": ["cat_007", "cat_003"],
+      "descripcion": "Crea, explora y sobrevive en un mundo infinito hecho de bloques con posibilidades ilimitadas",
+      "fecha_lanzamiento": "2011-11-18",
+      "plataformas": ["PC", "PlayStation 4", "Xbox One", "Nintendo Switch", "Mobile"],
+      "imagen_url": "https://www.minecraft.net/content/dam/games/minecraft/key-art/Games_Subnav_Minecraft-300x465.jpg",
+      "precio_actual": 26.95,
+      "clasificacion_edad": "E10+",
+      "duracion_aproximada": 999,
+      "multijugador": true
+    },
+    {
+      "id": "game_005",
+      "nombre": "Resident Evil 4 Remake",
+      "desarrollador": "Capcom",
+      "publisher": "Capcom",
+      "categorias": ["cat_008", "cat_006"],
+      "descripcion": "Leon S. Kennedy enfrenta horrores en una aldea europea aislada en esta reimaginación del clásico",
+      "fecha_lanzamiento": "2023-03-24",
+      "plataformas": ["PC", "PlayStation 5", "Xbox Series X/S"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg",
+      "precio_actual": 59.99,
+      "clasificacion_edad": "M",
+      "duracion_aproximada": 16,
+      "multijugador": false
+    },
+    {
+      "id": "game_006",
+      "nombre": "Civilization VI",
+      "desarrollador": "Firaxis Games",
+      "publisher": "2K Games",
+      "categorias": ["cat_004"],
+      "descripcion": "Construye un imperio que resista el paso del tiempo en este juego de estrategia por turnos",
+      "fecha_lanzamiento": "2016-10-21",
+      "plataformas": ["PC", "PlayStation 4", "Xbox One", "Nintendo Switch"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/289070/header.jpg",
+      "precio_actual": 59.99,
+      "clasificacion_edad": "E10+",
+      "duracion_aproximada": 200,
+      "multijugador": true
+    },
+    {
+      "id": "game_007",
+      "nombre": "Celeste",
+      "desarrollador": "Maddy Makes Games",
+      "publisher": "Maddy Makes Games",
+      "categorias": ["cat_005"],
+      "descripcion": "Escala la montaña Celeste en este desafiante plataformas con una emotiva historia sobre superación personal",
+      "fecha_lanzamiento": "2018-01-25",
+      "plataformas": ["PC", "PlayStation 4", "Xbox One", "Nintendo Switch"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/504230/header.jpg",
+      "precio_actual": 19.99,
+      "clasificacion_edad": "E10+",
+      "duracion_aproximada": 12,
+      "multijugador": false
+    },
+    {
+      "id": "game_008",
+      "nombre": "FIFA 23",
+      "desarrollador": "EA Sports",
+      "publisher": "Electronic Arts",
+      "categorias": ["cat_009"],
+      "descripcion": "La simulación de fútbol más realista con todos los equipos y ligas oficiales",
+      "fecha_lanzamiento": "2022-09-30",
+      "plataformas": ["PC", "PlayStation 5", "Xbox Series X/S", "PlayStation 4", "Xbox One"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/1811260/header.jpg",
+      "precio_actual": 69.99,
+      "clasificacion_edad": "E",
+      "duracion_aproximada": 999,
+      "multijugador": true
+    },
+    {
+      "id": "game_009",
+      "nombre": "Elden Ring",
+      "desarrollador": "FromSoftware",
+      "publisher": "Bandai Namco",
+      "categorias": ["cat_001", "cat_006", "cat_003"],
+      "descripcion": "Explora las Tierras Intermedias en este RPG de acción épico creado por Hidetaka Miyazaki y George R.R. Martin",
+      "fecha_lanzamiento": "2022-02-25",
+      "plataformas": ["PC", "PlayStation 5", "Xbox Series X/S", "PlayStation 4", "Xbox One"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",
+      "precio_actual": 59.99,
+      "clasificacion_edad": "M",
+      "duracion_aproximada": 60,
+      "multijugador": true
+    },
+    {
+      "id": "game_010",
+      "nombre": "Hades",
+      "desarrollador": "Supergiant Games",
+      "publisher": "Supergiant Games",
+      "categorias": ["cat_001", "cat_006"],
+      "descripcion": "Escapa del inframundo griego en este roguelike de acción con narrativa dinámica y combate frenético",
+      "fecha_lanzamiento": "2020-09-17",
+      "plataformas": ["PC", "PlayStation 5", "Xbox Series X/S", "Nintendo Switch"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/1145360/header.jpg",
+      "precio_actual": 24.99,
+      "clasificacion_edad": "T",
+      "duracion_aproximada": 25,
+      "multijugador": false
+    },
+    {
+      "id": "game_011",
+      "nombre": "Portal 2",
+      "desarrollador": "Valve Corporation",
+      "publisher": "Valve Corporation",
+      "categorias": ["cat_003", "cat_005"],
+      "descripcion": "Resuelve puzzles con el dispositivo de portales en esta secuela ingeniosa y divertida",
+      "fecha_lanzamiento": "2011-04-19",
+      "plataformas": ["PC", "PlayStation 3", "Xbox 360"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/620/header.jpg",
+      "precio_actual": 9.99,
+      "clasificacion_edad": "E10+",
+      "duracion_aproximada": 8,
+      "multijugador": true
+    },
+    {
+      "id": "game_012",
+      "nombre": "Dark Souls III",
+      "desarrollador": "FromSoftware",
+      "publisher": "Bandai Namco",
+      "categorias": ["cat_001", "cat_006"],
+      "descripcion": "Enfrenta desafíos brutales en un mundo oscuro y apocalíptico lleno de jefes épicos",
+      "fecha_lanzamiento": "2016-04-12",
+      "plataformas": ["PC", "PlayStation 4", "Xbox One"],
+      "imagen_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/374320/header.jpg",
+      "precio_actual": 59.99,
+      "clasificacion_edad": "M",
+      "duracion_aproximada": 32,
+      "multijugador": true
+    }
+  ]
+}
