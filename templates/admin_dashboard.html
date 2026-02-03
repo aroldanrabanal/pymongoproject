@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Administración{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="title has-text-centered mb-6">Panel de Administración</h1>
+    
+    <div class="columns is-multiline">
+      <!-- Tarjeta: Subir JSON -->
+      <div class="column is-4">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">
+              <span class="icon mr-2"><i class="fas fa-file-import"></i></span>
+              Importar Datos
+            </p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              Sube archivos JSON para cargar o actualizar la base de datos de videojuegos y categorías.
+            </div>
+          </div>
+          <footer class="card-footer">
+            <a href="{% url 'upload_json' %}" class="card-footer-item">Subir JSON</a>
+          </footer>
+        </div>
+      </div>
+
+      <!-- Tarjeta: Gestión de Videojuegos -->
+      <div class="column is-4">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">
+              <span class="icon mr-2"><i class="fas fa-gamepad"></i></span>
+              Videojuegos
+            </p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              Administra el catálogo de videojuegos. Añade, edita o elimina títulos de la plataforma.
+            </div>
+          </div>
+          <footer class="card-footer">
+            <a href="/admin/rankingsafa/videojuego/" class="card-footer-item">Gestionar Juegos</a>
+          </footer>
+        </div>
+      </div>
+
+      <!-- Tarjeta: Gestión de Categorías -->
+      <div class="column is-4">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">
+              <span class="icon mr-2"><i class="fas fa-tags"></i></span>
+              Categorías
+            </p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              Organiza los juegos por género o temática. Crea y gestiona las etiquetas de clasificación.
+            </div>
+          </div>
+          <footer class="card-footer">
+            <a href="{% url 'categoria_list' %}" class="card-footer-item">Gestionar Categorías</a>
+          </footer>
+        </div>
+      </div>
+
+      <!-- Tarjeta: Usuarios -->
+      <div class="column is-4">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">
+              <span class="icon mr-2"><i class="fas fa-users"></i></span>
+              Usuarios
+            </p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              Control de cuentas de usuario, roles y permisos de acceso al sistema.
+            </div>
+          </div>
+          <footer class="card-footer">
+            <a href="/admin/rankingsafa/user/" class="card-footer-item">Gestionar Usuarios</a>
+          </footer>
+        </div>
+      </div>
+
+      <!-- Tarjeta: Rankings y Reviews -->
+      <div class="column is-4">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">
+              <span class="icon mr-2"><i class="fas fa-star"></i></span>
+              Moderación
+            </p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              Supervisa las reseñas y rankings creados por los usuarios para mantener la calidad.
+            </div>
+          </div>
+          <footer class="card-footer">
+            <a href="/admin/rankingsafa/review/" class="card-footer-item">Reseñas</a>
+            <a href="/admin/rankingsafa/ranking/" class="card-footer-item">Rankings</a>
+          </footer>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+{% endblock %}

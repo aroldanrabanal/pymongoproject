@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-5">
+        <div class="box">
+          <h1 class="title has-text-centered">Registro</h1>
+          <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+              <div class="field">
+                <label class="label">{{ field.label }}</label>
+                <div class="control has-icons-left">
+                  {{ field }}
+                  <span class="icon is-small is-left">
+                    {% if field.name == 'username' %}
+                      <i class="fas fa-user"></i>
+                    {% elif field.name == 'mail' %}
+                      <i class="fas fa-envelope"></i>
+                    {% elif 'password' in field.name %}
+                      <i class="fas fa-lock"></i>
+                    {% endif %}
+                  </span>
+                </div>
+                {% if field.errors %}
+                  <p class="help is-danger">{{ field.errors|striptags }}</p>
+                {% endif %}
+              </div>
+            {% endfor %}
+            <div class="field mt-5">
+              <button class="button is-link is-fullwidth" type="submit">Registrarse</button>
+            </div>
+          </form>
+          <hr>
+          <p class="has-text-centered">
+            ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+{% endblock %}

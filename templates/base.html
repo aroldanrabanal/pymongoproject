@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rankings SAFA - {% block title %}{% endblock %}</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    .hero {
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                  url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=2070') center/cover no-repeat;
+    }
+    .card img {
+      object-fit: cover;
+    }
+    .tag {
+      margin-right: 0.35em;
+      margin-bottom: 0.35em;
+    }
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+
+<nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+  <div class="container">
+    <div class="navbar-brand">
+      <a class="navbar-item has-text-weight-bold is-size-4" href="{% url 'inicio' %}">
+        Rankings SAFA
+      </a>
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+
+    <div id="navbarMenu" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="{% url 'inicio' %}">Inicio</a>
+        {% if user.is_authenticated %}
+          {% if user.is_staff %}
+            <a class="navbar-item" href="{% url 'admin_dashboard' %}">Admin</a>
+            <a class="navbar-item" href="{% url 'upload_json' %}">Subir Datos</a>
+          {% endif %}
+        {% endif %}
+        <a class="navbar-item" href="#">Rankings</a>
+        <a class="navbar-item" href="{% url 'categoria_public_list' %}">Categorías</a>
+        <a class="navbar-item" href="#">Juegos</a>
+        <div class="navbar-item">
+          <div class="buttons">
+            {% if user.is_authenticated %}
+              <a class="button is-light" href="{% url 'logout' %}">Cerrar sesión</a>
+            {% else %}
+              <a class="button is-primary is-light" href="{% url 'login' %}">Iniciar sesión</a>
+              <a class="button is-link is-light" href="{% url 'register' %}">Registrarse</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+{% block content %}
+{% endblock %}
+
+<footer class="footer has-background-dark has-text-light">
+  <div class="content has-text-centered">
+    <p>
+      <strong>Rankings SAFA</strong> © 2026 - Hecho por Ángel Roldán Rabanal
+    </p>
+  </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+    if ($navbarBurgers.length > 0) {
+      $navbarBurgers.forEach( el => {
+        el.addEventListener('click', () => {
+          const target = el.dataset.target;
+          const $target = document.getElementById(target);
+          el.classList.toggle('is-active');
+          $target.classList.toggle('is-active');
+        });
+      });
+    }
+
+    // Mostrar toasts con SweetAlert2 a partir de mensajes de Django
+    {% if messages %}
+      {% for message in messages %}
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: '{{ message.tags|default:"info" }}',
+          title: '{{ message|escapejs }}',
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true
+        });
+      {% endfor %}
+    {% endif %}
+  });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Categorías{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="level">
+      <div class="level-left">
+        <h1 class="title">Categorías</h1>
+      </div>
+      <div class="level-right">
+        <button class="button is-primary" onclick="openModal()">
+          <span class="icon"><i class="fas fa-plus"></i></span>
+          <span>Nueva Categoría</span>
+        </button>
+      </div>
+    </div>
+
+    <table class="table is-fullwidth is-striped is-hoverable">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th class="has-text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in categorias %}
+        <tr>
+          <td>{{ c.code }}</td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.desc|truncatechars:100 }}</td>
+          <td class="has-text-right">
+            <button class="button is-small is-info" onclick="openModal('{{ c.pk }}', '{{ c.name|escapejs }}', '{{ c.desc|escapejs }}', '{{ c.image|escapejs }}')">
+              <span class="icon"><i class="fas fa-edit"></i></span>
+            </button>
+            <button class="button is-small is-danger" onclick="confirmDelete('{{ c.pk }}', '{{ c.name|escapejs }}')">
+              <span class="icon"><i class="fas fa-trash"></i></span>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="has-text-centered has-text-grey">No hay categorías registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Modal para Crear/Editar -->
+<div class="modal" id="categoria-modal">
+  <div class="modal-background" onclick="closeModal()"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title" id="modal-title">Nueva Categoría</p>
+      <button class="delete" aria-label="close" onclick="closeModal()"></button>
+    </header>
+    <form id="categoria-form" method="post">
+      {% csrf_token %}
+      <section class="modal-card-body">
+        <div class="field">
+          <label class="label">Nombre</label>
+          <div class="control">
+            {{ form.name }}
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Descripción</label>
+          <div class="control">
+            {{ form.desc }}
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Imagen (URL)</label>
+          <div class="control">
+            {{ form.image }}
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button type="submit" class="button is-success">Guardar</button>
+        <button type="button" class="button" onclick="closeModal()">Cancelar</button>
+      </footer>
+    </form>
+  </div>
+</div>
+
+<form id="delete-form" method="post" style="display:none;">
+  {% csrf_token %}
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const modal = document.getElementById('categoria-modal');
+const modalTitle = document.getElementById('modal-title');
+const categoriaForm = document.getElementById('categoria-form');
+const nameInput = categoriaForm.querySelector('[name="name"]');
+const descInput = categoriaForm.querySelector('[name="desc"]');
+const imageInput = categoriaForm.querySelector('[name="image"]');
+
+function openModal(pk = null, name = '', desc = '', image = '') {
+    if (pk) {
+        modalTitle.innerText = 'Editar Categoría';
+        categoriaForm.action = `/rankingsafa/categorias/${pk}/editar/`;
+        nameInput.value = name;
+        descInput.value = desc;
+        imageInput.value = image;
+    } else {
+        modalTitle.innerText = 'Nueva Categoría';
+        categoriaForm.action = "{% url 'categoria_create' %}";
+        categoriaForm.reset();
+    }
+    modal.classList.add('is-active');
+}
+
+function closeModal() {
+    modal.classList.remove('is-active');
+}
+
+function confirmDelete(pk, name) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: `Vas a eliminar la categoría "${name}". Esta acción no se puede deshacer.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('delete-form');
+            form.action = `/rankingsafa/categorias/${pk}/eliminar/`;
+            form.submit();
+        }
+    })
+}
+</script>
+{% endblock %}

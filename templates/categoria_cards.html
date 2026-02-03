@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Categorías{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="title has-text-centered mb-6">Explora categorías</h1>
+
+    <div class="columns is-multiline is-variable is-4">
+      {% for c in categorias %}
+      <div class="column is-3">
+        <div class="card is-fullheight">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img src="{{ c.image|default:'https://via.placeholder.com/400x300?text=Categoria' }}" alt="{{ c.name }}">
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-5">{{ c.name }}</p>
+            <p class="subtitle is-6 mb-2">Código: {{ c.code }}</p>
+            <p>{{ c.desc|truncatewords:25 }}</p>
+          </div>
+          <footer class="card-footer">
+            <a href="#" class="card-footer-item">Ver juegos</a>
+          </footer>
+        </div>
+      </div>
+      {% empty %}
+      <div class="column is-12">
+        <div class="notification is-warning has-text-centered">
+          No hay categorías disponibles todavía.
+          {% if user.is_staff %}
+            <a href="{% url 'categoria_list' %}">Crea una desde el panel</a> o <a href="{% url 'upload_json' %}">sube un JSON</a>.
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

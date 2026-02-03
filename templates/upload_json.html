@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Subir JSON{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-6">
+        <div class="box">
+          <h1 class="title has-text-centered">Cargar Datos de Videojuegos</h1>
+          <p class="subtitle is-6 has-text-centered mb-5">Sube el archivo <code>videojuegos_data.json</code> para actualizar el catálogo.</p>
+          
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="field">
+              <div class="file is-centered is-boxed is-primary has-name">
+                <label class="file-label">
+                  {{ form.json_file }}
+                  <span class="file-cta">
+                    <span class="file-icon">
+                      <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label">
+                      Elige un archivo…
+                    </span>
+                  </span>
+                  <span class="file-name" id="file-name">
+                    Ningún archivo seleccionado
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div class="field mt-5">
+              <button class="button is-link is-fullwidth" type="submit">
+                <span class="icon"><i class="fas fa-save"></i></span>
+                <span>Procesar y Guardar</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const fileInput = document.querySelector('.file-input');
+  fileInput.onchange = () => {
+    if (fileInput.files.length > 0) {
+      const fileName = document.querySelector('#file-name');
+      fileName.textContent = fileInput.files[0].name;
+    }
+  }
+</script>
+{% endblock %}
