@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ is_edit|yesno:"Editar,Crear" }} Ranking - {{ categoria.name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+      <ul>
+        <li><a href="{% url 'rankings_home' %}">Rankings</a></li>
+        <li><a href="{% url 'ranking_categoria_global' categoria.code %}">{{ categoria.name }}</a></li>
+        <li class="is-active"><a aria-current="page">{{ is_edit|yesno:"Editar,Crear" }} Ranking</a></li>
+      </ul>
+    </nav>
+
+    <h1 class="title is-2 has-text-centered mb-5">
+      {{ is_edit|yesno:"Editar,Crear" }} Tu Ranking - {{ categoria.name }}
+    </h1>
+
+    <div class="notification is-info is-light mb-5">
+      <p><strong>Instrucciones:</strong></p>
+      <ul>
+        <li>Arrastra los juegos desde el banco a tu ranking en el orden que prefieras</li>
+        <li>El juego en la posición 1 es tu favorito, el 2 es tu segundo favorito, etc.</li>
+        <li>Puedes reordenar arrastrando dentro del ranking</li>
+        <li>Solo necesitas rankear los juegos que quieras (no es obligatorio rankear todos)</li>
+      </ul>
+    </div>
+
+    <div class="columns">
+      <!-- Ranking List -->
+      <div class="column is-8">
+        <div class="box">
+          <h2 class="title is-4 mb-4">
+            <span class="icon"><i class="fas fa-trophy"></i></span>
+            Tu Ranking
+          </h2>
+
+          <div id="ranking-list" class="ranking-list">
+            {% for juego in ranked_games %}
+            <div class="ranking-item" data-game-code="{{ juego.code }}" draggable="true">
+              <div class="ranking-position">
+                <span class="position-number"></span>
+              </div>
+              <div class="ranking-game">
+                <figure class="image is-64x64">
+                  <img src="{{ juego.image|default:'https://via.placeholder.com/64?text=?' }}"
+                       alt="{{ juego.name }}">
+                </figure>
+                <div class="game-info">
+                  <p class="title is-6 mb-1">{{ juego.name }}</p>
+                  <p class="subtitle is-7 has-text-grey">{{ juego.developer }}</p>
+                </div>
+              </div>
+              <div class="ranking-actions">
+                <button type="button" class="button is-small is-ghost remove-game" title="Quitar del ranking">
+                  <span class="icon"><i class="fas fa-times"></i></span>
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+
+            {% if not ranked_games %}
+            <div class="has-text-centered has-text-grey py-6" id="empty-message">
+              <p class="icon is-large"><i class="fas fa-arrow-right fa-3x"></i></p>
+              <p class="is-size-5 mt-3">Arrastra juegos aquí para crear tu ranking</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Bank -->
+      <div class="column is-4">
+        <div class="box" style="position: sticky; top: 20px;">
+          <h2 class="title is-5 mb-4">
+            <span class="icon"><i class="fas fa-gamepad"></i></span>
+            Juegos Disponibles
+          </h2>
+
+          <div id="game-bank" class="game-bank">
+            {% for juego in unranked_games %}
+            <div class="bank-item" data-game-code="{{ juego.code }}" draggable="true">
+              <figure class="image is-48x48">
+                <img src="{{ juego.image|default:'https://via.placeholder.com/48?text=?' }}"
+                     alt="{{ juego.name }}">
+              </figure>
+              <div class="bank-game-info">
+                <p class="is-size-7 has-text-weight-semibold">{{ juego.name }}</p>
+              </div>
+            </div>
+            {% endfor %}
+
+            {% if not unranked_games %}
+            <p class="has-text-grey has-text-centered py-3 is-size-7">
+              Todos los juegos están rankeados
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="box has-background-light">
+      <form method="post" id="ranking-form">
+        {% csrf_token %}
+        <input type="hidden" name="ranking_data" id="ranking-data">
+
+        <div class="buttons is-centered">
+          <button type="submit" class="button is-primary is-large">
+            <span class="icon"><i class="fas fa-save"></i></span>
+            <span>Guardar Ranking</span>
+          </button>
+          <a href="{% url 'ranking_categoria_global' categoria.code %}" class="button is-light is-large">
+            <span class="icon"><i class="fas fa-times"></i></span>
+            <span>Cancelar</span>
+          </a>
+          {% if is_edit %}
+          <button type="button" class="button is-danger is-large" id="delete-btn">
+            <span class="icon"><i class="fas fa-trash"></i></span>
+            <span>Eliminar Ranking</span>
+          </button>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% block extra_css %}
+<style>
+  .ranking-list {
+    min-height: 400px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 15px;
+  }
+
+  .ranking-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 2px solid #dbdbdb;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: move;
+    transition: all 0.2s;
+  }
+
+  .ranking-item:hover {
+    border-color: #3273dc;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .ranking-item.dragging {
+    opacity: 0.5;
+  }
+
+  .ranking-item.drag-over {
+    border-color: #48c774;
+    background-color: #f0fff4;
+  }
+
+  .ranking-position {
+    width: 60px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #3273dc;
+  }
+
+  .ranking-game {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .ranking-game .image {
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .ranking-game .image img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+
+  .game-info {
+    flex: 1;
+  }
+
+  .ranking-actions {
+    padding-left: 10px;
+  }
+
+  .game-bank {
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  .bank-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: move;
+    transition: background-color 0.2s;
+    margin-bottom: 8px;
+  }
+
+  .bank-item:hover {
+    background-color: #f5f5f5;
+  }
+
+  .bank-item.dragging {
+    opacity: 0.5;
+  }
+
+  .bank-item .image {
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bank-item .image img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+
+  .bank-game-info {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .bank-game-info p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const rankingList = document.getElementById('ranking-list');
+  const gameBank = document.getElementById('game-bank');
+  const emptyMessage = document.getElementById('empty-message');
+  let draggedElement = null;
+
+  // Actualizar números de posición
+  function updatePositions() {
+    const items = rankingList.querySelectorAll('.ranking-item');
+    items.forEach((item, index) => {
+      item.querySelector('.position-number').textContent = (index + 1) + 'º';
+    });
+
+    // Mostrar/ocultar mensaje vacío
+    if (emptyMessage) {
+      emptyMessage.style.display = items.length === 0 ? 'block' : 'none';
+    }
+  }
+
+  // Inicializar posiciones
+  updatePositions();
+
+  // Drag & Drop para items del ranking
+  function setupRankingItemDrag(item) {
+    item.addEventListener('dragstart', (e) => {
+      draggedElement = item;
+      item.classList.add('dragging');
+    });
+
+    item.addEventListener('dragend', (e) => {
+      item.classList.remove('dragging');
+      draggedElement = null;
+    });
+  }
+
+  // Drag & Drop para items del banco
+  function setupBankItemDrag(item) {
+    item.addEventListener('dragstart', (e) => {
+      draggedElement = item;
+      item.classList.add('dragging');
+    });
+
+    item.addEventListener('dragend', (e) => {
+      item.classList.remove('dragging');
+      draggedElement = null;
+    });
+  }
+
+  // Setup inicial
+  rankingList.querySelectorAll('.ranking-item').forEach(setupRankingItemDrag);
+  gameBank.querySelectorAll('.bank-item').forEach(setupBankItemDrag);
+
+  // Ranking list drop zone
+  rankingList.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  rankingList.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!draggedElement) return;
+
+    // Verificar si ya existe en el ranking para evitar duplicados
+    const existingItem = rankingList.querySelector(`[data-game-code="${draggedElement.dataset.gameCode}"]`);
+    if (existingItem && existingItem !== draggedElement) {
+      return; // Ya existe, no hacer nada
+    }
+
+    const afterElement = getDragAfterElement(rankingList, e.clientY);
+    const rankingItem = convertToRankingItem(draggedElement);
+
+    if (afterElement == null) {
+      rankingList.appendChild(rankingItem);
+    } else {
+      rankingList.insertBefore(rankingItem, afterElement);
+    }
+    updatePositions();
+  });
+
+  // Game bank drop zone
+  gameBank.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+
+  gameBank.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (draggedElement && draggedElement.classList.contains('ranking-item')) {
+      draggedElement.remove();
+      // Crear bank item desde ranking item
+      const bankItem = createBankItemFromRanking(draggedElement);
+      gameBank.appendChild(bankItem);
+      setupBankItemDrag(bankItem);
+      updatePositions();
+    }
+  });
+
+  // Convertir bank item a ranking item
+  function convertToRankingItem(element) {
+    if (element.classList.contains('ranking-item')) {
+      return element;
+    }
+
+    const gameCode = element.dataset.gameCode;
+    const img = element.querySelector('img').src;
+    const name = element.querySelector('.bank-game-info p').textContent;
+
+    const rankingItem = document.createElement('div');
+    rankingItem.className = 'ranking-item';
+    rankingItem.dataset.gameCode = gameCode;
+    rankingItem.draggable = true;
+    rankingItem.innerHTML = `
+      <div class="ranking-position">
+        <span class="position-number"></span>
+      </div>
+      <div class="ranking-game">
+        <figure class="image is-64x64">
+          <img src="${img}" alt="${name}">
+        </figure>
+        <div class="game-info">
+          <p class="title is-6 mb-1">${name}</p>
+        </div>
+      </div>
+      <div class="ranking-actions">
+        <button type="button" class="button is-small is-ghost remove-game" title="Quitar del ranking">
+          <span class="icon"><i class="fas fa-times"></i></span>
+        </button>
+      </div>
+    `;
+
+    setupRankingItemDrag(rankingItem);
+
+    // Remove button
+    rankingItem.querySelector('.remove-game').addEventListener('click', () => {
+      const bankItem = createBankItemFromRanking(rankingItem);
+      gameBank.appendChild(bankItem);
+      setupBankItemDrag(bankItem);
+      rankingItem.remove();
+      updatePositions();
+    });
+
+    element.remove();
+    return rankingItem;
+  }
+
+  // Crear bank item desde ranking item
+  function createBankItemFromRanking(rankingItem) {
+    const gameCode = rankingItem.dataset.gameCode;
+    const img = rankingItem.querySelector('img').src;
+    const name = rankingItem.querySelector('.title').textContent;
+
+    const bankItem = document.createElement('div');
+    bankItem.className = 'bank-item';
+    bankItem.dataset.gameCode = gameCode;
+    bankItem.draggable = true;
+    bankItem.innerHTML = `
+      <figure class="image is-48x48">
+        <img src="${img}" alt="${name}">
+      </figure>
+      <div class="bank-game-info">
+        <p class="is-size-7 has-text-weight-semibold">${name}</p>
+      </div>
+    `;
+
+    return bankItem;
+  }
+
+  // Encontrar elemento después del cursor
+  function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.ranking-item:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
+  // Remove buttons existentes
+  document.querySelectorAll('.remove-game').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const rankingItem = btn.closest('.ranking-item');
+      const bankItem = createBankItemFromRanking(rankingItem);
+      gameBank.appendChild(bankItem);
+      setupBankItemDrag(bankItem);
+      rankingItem.remove();
+      updatePositions();
+    });
+  });
+
+  // Guardar ranking
+  document.getElementById('ranking-form').addEventListener('submit', (e) => {
+    const items = rankingList.querySelectorAll('.ranking-item');
+    const ranking = Array.from(items).map(item => parseInt(item.dataset.gameCode));
+    document.getElementById('ranking-data').value = JSON.stringify(ranking);
+  });
+
+  // Eliminar ranking
+  {% if is_edit %}
+  document.getElementById('delete-btn').addEventListener('click', () => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Esto eliminará tu ranking de esta categoría.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#f14668',
+      cancelButtonColor: '#3273dc',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "ranking_delete" categoria.code %}';
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = '{{ csrf_token }}';
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  });
+  {% endif %}
+});
+</script>
+{% endblock %}
+{% endblock %}

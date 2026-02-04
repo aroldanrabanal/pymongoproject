@@ -23,7 +23,6 @@
           </div>
           <div class="card-content">
             <h1 class="title is-4 mb-2">{{ juego.name }}</h1>
-            <p class="subtitle is-6 has-text-grey mb-4">Código: {{ juego.code }}</p>
 
             <div class="tags mb-4">
               {% if juego.cat_tags %}
@@ -56,7 +55,7 @@
                     <td>
                       <div class="tags">
                         {% for p in juego.platforms %}
-                        <span class="tag is-light">{{ p }}</span>
+                        <span class="tag is-primary">{{ p }}</span>
                         {% endfor %}
                       </div>
                     </td>
@@ -157,6 +156,24 @@
                     {{ review.comentary }}
                   </p>
                 </div>
+                {% if user.is_authenticated and review.user == user.username or user.role == 'admin' %}
+                <div class="buttons are-small">
+                  {% if review.user == user.username %}
+                  <button class="button is-info is-light btn-edit-review"
+                          data-url="{% url 'review_edit' juego.code review.serie %}"
+                          data-rating="{{ review.rating }}"
+                          data-comentary="{{ review.comentary }}">
+                    <span class="icon is-small"><i class="fas fa-edit"></i></span>
+                    <span>Editar</span>
+                  </button>
+                  {% endif %}
+                  <button class="button is-danger is-light btn-delete-review"
+                          data-url="{% url 'review_delete' juego.code review.serie %}">
+                    <span class="icon is-small"><i class="fas fa-trash"></i></span>
+                    <span>Borrar</span>
+                  </button>
+                </div>
+                {% endif %}
               </div>
             </div>
             {% if not forloop.last %}<hr>{% endif %}
@@ -169,11 +186,130 @@
   </div>
 </section>
 
+<!-- Modal de Edición de Reseña -->
+<div id="modal-edit-review" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Editar mi reseña</p>
+      <button class="delete close-modal" aria-label="close"></button>
+    </header>
+    <form id="form-edit-review" method="post" action="">
+      {% csrf_token %}
+      <section class="modal-card-body">
+        <div class="field">
+          <label class="label">Puntuación</label>
+          <div class="control">
+            <div class="rating-stars rating-stars-modal" aria-label="Selector de estrellas">
+              <input type="radio" id="mstar5" name="rating" value="5" required>
+              <label for="mstar5" title="5 estrellas"><i class="fas fa-star"></i></label>
+
+              <input type="radio" id="mstar4" name="rating" value="4">
+              <label for="mstar4" title="4 estrellas"><i class="fas fa-star"></i></label>
+
+              <input type="radio" id="mstar3" name="rating" value="3">
+              <label for="mstar3" title="3 estrellas"><i class="fas fa-star"></i></label>
+
+              <input type="radio" id="mstar2" name="rating" value="2">
+              <label for="mstar2" title="2 estrellas"><i class="fas fa-star"></i></label>
+
+              <input type="radio" id="mstar1" name="rating" value="1">
+              <label for="mstar1" title="1 estrella"><i class="fas fa-star"></i></label>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Comentario</label>
+          <div class="control">
+            <textarea name="comentary" id="modal-comentary" class="textarea" required placeholder="Escribe tu opinión aquí..."></textarea>
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <div class="buttons">
+          <button type="submit" class="button is-success">Guardar cambios</button>
+          <button type="button" class="button close-modal">Cancelar</button>
+        </div>
+      </footer>
+    </form>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Manejo de Modal
+    const modal = document.getElementById('modal-edit-review');
+    const formEdit = document.getElementById('form-edit-review');
+    const modalComentary = document.getElementById('modal-comentary');
+
+    // Botones Editar
+    document.querySelectorAll('.btn-edit-review').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const url = btn.dataset.url;
+            const rating = btn.dataset.rating;
+            const comentary = btn.dataset.comentary;
+
+            // Configurar acción del formulario
+            formEdit.action = url;
+
+            // Configurar valores
+            modalComentary.value = comentary;
+            const radio = modal.querySelector(`input[name="rating"][value="${rating}"]`);
+            if (radio) radio.checked = true;
+
+            modal.classList.add('is-active');
+        });
+    });
+
+    // Cerrar Modal
+    document.querySelectorAll('.close-modal, .modal-background').forEach(el => {
+        el.addEventListener('click', () => {
+            modal.classList.remove('is-active');
+        });
+    });
+
+    // SweetAlert para Borrar
+    document.querySelectorAll('.btn-delete-review').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const url = btn.dataset.url;
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f14668',
+                cancelButtonColor: '#3273dc',
+                confirmButtonText: 'Sí, borrar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = 'csrfmiddlewaretoken';
+                    csrf.value = '{{ csrf_token }}';
+                    form.appendChild(csrf);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+
 {% block extra_css %}
 <style>
   .rating-stars {
     display: inline-flex;
     flex-direction: row-reverse; /* para que el hermano siguiente (~) pinte todas las de la izquierda */
+  }
+  .rating-stars-modal label {
+    font-size: 2rem !important;
   }
   .rating-stars input {
     display: none;

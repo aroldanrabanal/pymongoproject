@@ -17,5 +17,18 @@ urlpatterns = [
     # Vista pública de categorías
     path('categorias-explorar/', categoria_public_list, name='categoria_public_list'),
     path('categorias/<int:code>/juegos/', categoria_games, name='categoria_games'),
+
+    # Listado y detalle de juegos
+    path('juegos/', games_list, name='games_list'),
     path('juego/<int:code>/', game_detail, name='game_detail'),
+
+    # Reseñas
+    path('juego/<int:game_code>/review/<int:serie>/editar/', review_edit, name='review_edit'),
+    path('juego/<int:game_code>/review/<int:serie>/eliminar/', review_delete, name='review_delete'),
+
+    # Rankings
+    path('rankings/', rankings_home, name='rankings_home'),
+    path('rankings/categoria/<int:category_code>/', ranking_categoria_global, name='ranking_categoria_global'),
+    path('rankings/categoria/<int:category_code>/crear/', ranking_crear, name='ranking_crear'),
+    path('rankings/categoria/<int:category_code>/eliminar/', ranking_delete, name='ranking_delete'),
 ]

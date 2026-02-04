@@ -48,9 +48,9 @@
             <a class="navbar-item" href="{% url 'upload_json' %}">Subir Datos</a>
           {% endif %}
         {% endif %}
-        <a class="navbar-item" href="#">Rankings</a>
+        <a class="navbar-item" href="{% url 'rankings_home' %}">Rankings</a>
         <a class="navbar-item" href="{% url 'categoria_public_list' %}">Categorías</a>
-        <a class="navbar-item" href="#">Juegos</a>
+        <a class="navbar-item" href="{% url 'games_list' %}">Juegos</a>
         <div class="navbar-item">
           <div class="buttons">
             {% if user.is_authenticated %}

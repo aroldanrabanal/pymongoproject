@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Ranking - {{ categoria.name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+      <ul>
+        <li><a href="{% url 'rankings_home' %}">Rankings</a></li>
+        <li class="is-active"><a aria-current="page">{{ categoria.name }}</a></li>
+      </ul>
+    </nav>
+
+    <div class="level mb-5">
+      <div class="level-left">
+        <div class="level-item">
+          <div>
+            <h1 class="title is-2">
+              <span class="icon"><i class="fas fa-trophy"></i></span>
+              Ranking Global - {{ categoria.name }}
+            </h1>
+            <p class="subtitle is-5 has-text-grey">
+              Basado en {{ total_rankings }} tier list{{ total_rankings|pluralize }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          {% if user.is_authenticated %}
+          <a href="{% url 'ranking_crear' categoria.code %}" class="button is-primary">
+            <span class="icon"><i class="fas fa-edit"></i></span>
+            <span>Crear/Editar Mi Tier List</span>
+          </a>
+          {% else %}
+          <a href="{% url 'login' %}" class="button is-primary">
+            <span class="icon"><i class="fas fa-sign-in-alt"></i></span>
+            <span>Inicia sesión para rankear</span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if game_rankings %}
+    <div class="box">
+      <table class="table is-fullwidth is-striped is-hoverable">
+        <thead>
+          <tr>
+            <th class="has-text-centered" width="80">Posición</th>
+            <th>Juego</th>
+            <th class="has-text-centered" width="150">Puntuación</th>
+            <th class="has-text-centered" width="120">Votos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in game_rankings %}
+          <tr>
+            <td class="has-text-centered has-text-weight-bold is-size-4">
+              {% if forloop.counter == 1 %}
+                <span class="tag is-warning is-large">
+                  <span class="icon"><i class="fas fa-crown"></i></span>
+                  <span>1</span>
+                </span>
+              {% elif forloop.counter == 2 %}
+                <span class="tag is-light is-large" style="background-color: #c0c0c0;">2</span>
+              {% elif forloop.counter == 3 %}
+                <span class="tag is-warning is-light is-large">3</span>
+              {% else %}
+                <span class="has-text-grey">{{ forloop.counter }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="media">
+                <div class="media-left">
+                  <figure class="image is-64x64">
+                    <img src="{{ item.juego.image|default:'https://via.placeholder.com/64?text=?' }}"
+                         alt="{{ item.juego.name }}"
+                         style="object-fit: cover;">
+                  </figure>
+                </div>
+                <div class="media-content">
+                  <p class="title is-5 mb-1">{{ item.juego.name }}</p>
+                  <p class="subtitle is-6 has-text-grey mb-0">{{ item.juego.developer }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="has-text-centered">
+              <div class="tags has-addons is-centered mb-0">
+                <span class="tag is-primary is-medium">{{ item.score }} pts</span>
+              </div>
+              <p class="is-size-7 has-text-grey mt-2">Posición promedio: {{ item.avg_position }}º</p>
+            </td>
+            <td class="has-text-centered">
+              <span class="tag is-info is-light is-medium">
+                <span class="icon"><i class="fas fa-users"></i></span>
+                <span>{{ item.votes }}</span>
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="notification is-warning">
+      <p class="has-text-centered is-size-5">
+        <span class="icon is-large"><i class="fas fa-inbox fa-2x"></i></span>
+      </p>
+      <p class="has-text-centered has-text-weight-bold">
+        Aún no hay tier lists para esta categoría
+      </p>
+      <p class="has-text-centered">
+        {% if user.is_authenticated %}
+        ¡Sé el primero en crear uno!
+        <br>
+        <a href="{% url 'ranking_crear' categoria.code %}" class="button is-primary mt-3">
+          Crear Tier List
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}">Inicia sesión</a> para ser el primero en crear uno
+        {% endif %}
+      </p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% block extra_css %}
+<style>
+  .media {
+    align-items: center;
+  }
+  .table tr {
+    vertical-align: middle;
+  }
+</style>
+{% endblock %}
+{% endblock %}

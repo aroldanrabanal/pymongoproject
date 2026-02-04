@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Rankings{% endblock %}
+
+{% block content %}
+<section class="hero is-primary">
+  <div class="hero-body">
+    <div class="container has-text-centered">
+      <h1 class="title is-1">
+        <span class="icon is-large"><i class="fas fa-trophy"></i></span>
+        Rankings
+      </h1>
+      <p class="subtitle is-4">Crea tier lists y compara tus opiniones con la comunidad</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="content has-text-centered mb-5">
+      <p class="is-size-5">Selecciona una categoría para ver su ranking global o crear tu propia tier list</p>
+    </div>
+
+    <div class="columns is-multiline">
+      {% for categoria in categorias %}
+      <div class="column is-4">
+        <div class="card ranking-category-card">
+          <div class="card-image">
+            <figure class="image is-3by2">
+              <img src="{{ categoria.image|default:'https://via.placeholder.com/600x400?text=Sin+Imagen' }}"
+                   alt="{{ categoria.name }}">
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-4">{{ categoria.name }}</p>
+            <p class="subtitle is-6 has-text-grey">{{ categoria.desc }}</p>
+
+            <div class="buttons">
+              <a href="{% url 'ranking_categoria_global' categoria.code %}"
+                 class="button is-primary is-fullwidth">
+                <span class="icon"><i class="fas fa-chart-bar"></i></span>
+                <span>Ver Ranking Global</span>
+              </a>
+              {% if user.is_authenticated %}
+              <a href="{% url 'ranking_crear' categoria.code %}"
+                 class="button is-info is-fullwidth">
+                <span class="icon"><i class="fas fa-edit"></i></span>
+                <span>Crear Mi Tier List</span>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if not user.is_authenticated %}
+    <div class="notification is-info is-light mt-5">
+      <p class="has-text-centered">
+        <strong>¿Quieres crear tus propias tier lists?</strong>
+        <a href="{% url 'login' %}">Inicia sesión</a> o
+        <a href="{% url 'register' %}">regístrate</a>
+      </p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% block extra_css %}
+<style>
+  .ranking-category-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .ranking-category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  }
+  .ranking-category-card .card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .ranking-category-card .buttons {
+    margin-top: auto;
+  }
+</style>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Reseña{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-half">
+        <div class="box">
+          <h2 class="title is-4 has-text-danger">Eliminar reseña</h2>
+          <p class="content">¿Estás seguro de que quieres eliminar tu reseña? Esta acción no se puede deshacer.</p>
+          
+          <div class="notification is-light">
+            <p><strong>Puntuación:</strong> {{ review.rating }} estrellas</p>
+            <p><strong>Comentario:</strong> {{ review.comentary }}</p>
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="field is-grouped">
+              <div class="control">
+                <button type="submit" class="button is-danger">Eliminar definitivamente</button>
+              </div>
+              <div class="control">
+                <a href="{% url 'game_detail' game_code %}" class="button is-light">Cancelar</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

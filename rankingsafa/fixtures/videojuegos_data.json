@@ -3,52 +3,62 @@
     {
       "id": "cat_001",
       "nombre": "RPG",
-      "descripcion": "Juegos de rol donde el jugador controla personajes en aventuras épicas con progresión de habilidades"
+      "descripcion": "Juegos de rol donde el jugador controla personajes en aventuras épicas con progresión de habilidades",
+      "imagen_url": "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&q=80"
     },
     {
       "id": "cat_002",
       "nombre": "FPS",
-      "descripcion": "Juegos de disparos en primera persona centrados en combate con armas"
+      "descripcion": "Juegos de disparos en primera persona centrados en combate con armas",
+      "imagen_url": "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=800&q=80"
     },
     {
       "id": "cat_003",
       "nombre": "Aventura",
-      "descripcion": "Juegos enfocados en exploración, narrativa y resolución de puzzles"
+      "descripcion": "Juegos enfocados en exploración, narrativa y resolución de puzzles",
+      "imagen_url": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80"
     },
     {
       "id": "cat_004",
       "nombre": "Estrategia",
-      "descripcion": "Juegos que requieren planificación táctica y gestión de recursos"
+      "descripcion": "Juegos que requieren planificación táctica y gestión de recursos",
+      "imagen_url": "https://images.unsplash.com/photo-1611371805429-8b5c1b2c34ba?w=800&q=80"
     },
     {
       "id": "cat_005",
       "nombre": "Plataformas",
-      "descripcion": "Juegos donde el personaje salta entre plataformas evitando obstáculos"
+      "descripcion": "Juegos donde el personaje salta entre plataformas evitando obstáculos",
+      "imagen_url": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80"
     },
     {
       "id": "cat_006",
       "nombre": "Acción",
-      "descripcion": "Juegos centrados en reflejos rápidos y combate dinámico"
+      "descripcion": "Juegos centrados en reflejos rápidos y combate dinámico",
+      "imagen_url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80"
     },
     {
       "id": "cat_007",
       "nombre": "Sandbox",
-      "descripcion": "Juegos de mundo abierto con gran libertad creativa y exploratoria"
+      "descripcion": "Juegos de mundo abierto con gran libertad creativa y exploratoria",
+      "imagen_url": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80"
     },
     {
       "id": "cat_008",
       "nombre": "Survival Horror",
-      "descripcion": "Juegos de terror enfocados en supervivencia con recursos limitados"
+      "descripcion": "Juegos de terror enfocados en supervivencia con recursos limitados",
+      "imagen_url": "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=800&q=80"
     },
     {
       "id": "cat_009",
       "nombre": "Deportes",
-      "descripcion": "Simulaciones de deportes reales o ficticios"
+      "descripcion": "Simulaciones de deportes reales o ficticios",
+      "imagen_url": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&q=80"
     },
     {
       "id": "cat_010",
       "nombre": "Metroidvania",
-      "descripcion": "Juegos de exploración con mapas interconectados y habilidades desbloqueables"
+      "descripcion": "Juegos de exploración con mapas interconectados y habilidades desbloqueables",
+      "imagen_url": "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&q=80"
     }
   ],
   "videojuegos": [

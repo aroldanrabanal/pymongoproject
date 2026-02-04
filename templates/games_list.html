@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Explorar Juegos{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <h1 class="title is-2 has-text-centered mb-5">Explorar Juegos</h1>
+
+    <div class="columns">
+      <!-- Sidebar de Filtros -->
+      <div class="column is-3">
+        <div class="box">
+          <h2 class="title is-5 mb-4">
+            <span class="icon-text">
+              <span class="icon"><i class="fas fa-filter"></i></span>
+              <span>Filtros</span>
+            </span>
+          </h2>
+
+          <form method="get" action="{% url 'games_list' %}" id="filter-form">
+            <!-- Filtro por Categorías -->
+            <div class="mb-5">
+              <p class="heading has-text-weight-bold mb-3">Categorías</p>
+              <div class="field">
+                {% for categoria in categorias %}
+                <label class="checkbox is-block mb-2">
+                  <input type="checkbox" name="category" value="{{ categoria.code }}"
+                         {% if categoria.code in selected_categories %}checked{% endif %}>
+                  {{ categoria.name }}
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Filtro por Plataformas -->
+            <div class="mb-5">
+              <p class="heading has-text-weight-bold mb-3">Plataformas</p>
+              <div class="field">
+                {% for platform in all_platforms %}
+                <label class="checkbox is-block mb-2">
+                  <input type="checkbox" name="platform" value="{{ platform }}"
+                         {% if platform in selected_platforms %}checked{% endif %}>
+                  {{ platform }}
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="buttons">
+              <button type="submit" class="button is-primary is-fullwidth">
+                <span class="icon"><i class="fas fa-search"></i></span>
+                <span>Aplicar Filtros</span>
+              </button>
+              <a href="{% url 'games_list' %}" class="button is-light is-fullwidth">
+                <span class="icon"><i class="fas fa-times"></i></span>
+                <span>Limpiar Filtros</span>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Grid de Juegos -->
+      <div class="column is-9">
+        {% if videojuegos %}
+          <p class="subtitle is-6 mb-4">
+            Mostrando {{ videojuegos|length }} juego{{ videojuegos|length|pluralize }}
+          </p>
+
+          <div class="columns is-multiline">
+            {% for juego in videojuegos %}
+            <div class="column is-4">
+              <div class="card game-card">
+                <div class="card-image">
+                  <figure class="image is-4by3">
+                    <img src="{{ juego.image|default:'https://via.placeholder.com/400x300?text=Sin+Imagen' }}"
+                         alt="{{ juego.name }}">
+                  </figure>
+                </div>
+                <div class="card-content">
+                  <p class="title is-5 mb-2" style="min-height: 2.5em;">{{ juego.name }}</p>
+
+                  <!-- Categorías -->
+                  <div class="tags mb-3">
+                    {% if juego.cat_tags %}
+                      {% for tag in juego.cat_tags %}
+                        <span class="tag {{ tag.color }} is-small">{{ tag.name }}</span>
+                      {% endfor %}
+                    {% else %}
+                      <span class="tag is-light is-small">Sin categoría</span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Plataformas -->
+                  {% if juego.platforms %}
+                  <div class="tags mb-3">
+                    {% for platform in juego.platforms|slice:":3" %}
+                      <span class="tag is-info is-light is-small">
+                        <span class="icon is-small"><i class="fas fa-gamepad"></i></span>
+                        <span>{{ platform }}</span>
+                      </span>
+                    {% endfor %}
+                    {% if juego.platforms|length > 3 %}
+                      <span class="tag is-light is-small">+{{ juego.platforms|length|add:"-3" }}</span>
+                    {% endif %}
+                  </div>
+                  {% endif %}
+
+                  <!-- Precio -->
+                  <div class="mb-3">
+                    {% if juego.price > 0 %}
+                      <span class="tag is-success is-light">{{ juego.price }}€</span>
+                    {% else %}
+                      <span class="tag is-success">Gratis</span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Botón Ver Juego -->
+                  <a href="{% url 'game_detail' juego.code %}" class="button is-primary is-fullwidth">
+                    <span class="icon"><i class="fas fa-eye"></i></span>
+                    <span>Ver Juego</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="notification is-warning">
+            <p class="has-text-centered">
+              <span class="icon is-large"><i class="fas fa-search fa-2x"></i></span>
+            </p>
+            <p class="has-text-centered has-text-weight-bold">
+              No se encontraron juegos con los filtros seleccionados.
+            </p>
+            <p class="has-text-centered">
+              <a href="{% url 'games_list' %}" class="button is-light mt-3">Limpiar filtros</a>
+            </p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% block extra_css %}
+<style>
+  .game-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  }
+  .game-card .card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .game-card .button {
+    margin-top: auto;
+  }
+  .checkbox.is-block {
+    display: block;
+  }
+</style>
+{% endblock %}
+{% endblock %}
