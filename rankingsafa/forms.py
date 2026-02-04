@@ -48,3 +48,16 @@ class CategoriaForm(forms.ModelForm):
             'image': forms.URLInput(attrs={'class': 'input', 'placeholder': 'URL de la imagen o icono'}),
         }
 
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['rating', 'comentary']
+        labels = {
+            'rating': 'Puntuación (0-5)',
+            'comentary': 'Comentario',
+        }
+        widgets = {
+            'rating': forms.NumberInput(attrs={'class': 'input', 'min': 0, 'max': 5}),
+            'comentary': forms.Textarea(attrs={'class': 'textarea', 'placeholder': 'Escribe tu opinión aquí...', 'rows': 4}),
+        }
+

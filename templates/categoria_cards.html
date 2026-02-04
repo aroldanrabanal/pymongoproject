@@ -22,7 +22,7 @@
             <p>{{ c.desc|truncatewords:25 }}</p>
           </div>
           <footer class="card-footer">
-            <a href="#" class="card-footer-item">Ver juegos</a>
+            <a href="{% url 'categoria_games' c.code %}" class="card-footer-item">Ver juegos</a>
           </footer>
         </div>
       </div>

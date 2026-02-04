@@ -1,14 +1,32 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from rankingsafa.forms import RegisterForm, LoginForm, UploadJSONForm, CategoriaForm
+from rankingsafa.forms import RegisterForm, LoginForm, UploadJSONForm, CategoriaForm, ReviewForm
 from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from .models import Videojuego, Categoria
+from .models import Videojuego, Categoria, Review
 import json
+
+# Helpers para categorías: nombre y color determinista por código
+def _build_categoria_maps():
+    categorias = Categoria.objects.all()
+    name_map = {c.code: c.name for c in categorias}
+    palette = ['is-primary', 'is-link', 'is-info', 'is-success', 'is-warning', 'is-danger', 'is-dark']
+    color_map = {c.code: palette[c.code % len(palette)] for c in categorias}
+    return name_map, color_map
 
 # Create your views here.
 def mostrar_inicio(request):
     videojuegos = Videojuego.objects.all()
+    name_map, color_map = _build_categoria_maps()
+    for v in videojuegos:
+        cats = getattr(v, 'category', []) or []
+        v.cat_tags = [
+            {
+                'name': name_map.get(code, f'Cat. {code}'),
+                'color': color_map.get(code, 'is-dark')
+            }
+            for code in cats
+        ]
     return render(request, 'inicio.html', {'videojuegos': videojuegos})
 
 def register(request):
@@ -99,21 +117,24 @@ def upload_json(request):
                             pass
 
                     existing_game = Videojuego.objects.filter(code=code)
+                    game_fields = {
+                        'name': game_data['nombre'],
+                        'desc': game_data['descripcion'],
+                        'category': category_codes,
+                        'image': game_data.get('imagen_url', ''),
+                        'developer': game_data.get('desarrollador', ''),
+                        'publisher': game_data.get('publisher', ''),
+                        'release_date': game_data.get('fecha_lanzamiento'),
+                        'platforms': game_data.get('plataformas', []),
+                        'price': game_data.get('precio_actual', 0.0),
+                        'age_rating': game_data.get('clasificacion_edad', ''),
+                        'duration': game_data.get('duracion_aproximada', 0),
+                        'multiplayer': game_data.get('multijugador', False),
+                    }
                     if existing_game.exists():
-                        existing_game.update(
-                            name=game_data['nombre'],
-                            desc=game_data['descripcion'],
-                            category=category_codes,
-                            image=game_data.get('imagen_url', '')
-                        )
+                        existing_game.update(**game_fields)
                     else:
-                        Videojuego.objects.create(
-                            code=code,
-                            name=game_data['nombre'],
-                            desc=game_data['descripcion'],
-                            category=category_codes,
-                            image=game_data.get('imagen_url', '')
-                        )
+                        Videojuego.objects.create(code=code, **game_fields)
             
             return redirect('inicio')
     else:
@@ -195,3 +216,69 @@ def categoria_delete(request, pk):
 def categoria_public_list(request):
     categorias = Categoria.objects.all()
     return render(request, 'categoria_cards.html', {'categorias': categorias})
+
+# Listado de juegos por categoría (vista pública)
+def categoria_games(request, code):
+    categoria = get_object_or_404(Categoria, code=code)
+    # Videojuego.category es un ArrayField de códigos de categoría.
+    # En MongoDB, (campo = valor) actúa como búsqueda de pertenencia en arrays.
+    videojuegos = Videojuego.objects.filter(category=code)
+    name_map, color_map = _build_categoria_maps()
+    for v in videojuegos:
+        cats = getattr(v, 'category', []) or []
+        v.cat_tags = [
+            {
+                'name': name_map.get(c, f'Cat. {c}'),
+                'color': color_map.get(c, 'is-dark')
+            }
+            for c in cats
+        ]
+    context = {
+        'categoria': categoria,
+        'videojuegos': videojuegos,
+    }
+    return render(request, 'categoria_games.html', context)
+
+def game_detail(request, code):
+    juego = get_object_or_404(Videojuego, code=code)
+    reviews = Review.objects.filter(code=code).order_by('-reviewDate')
+    
+    name_map, color_map = _build_categoria_maps()
+    cats = getattr(juego, 'category', []) or []
+    juego.cat_tags = [
+        {
+            'name': name_map.get(c, f'Cat. {c}'),
+            'color': color_map.get(c, 'is-dark')
+        }
+        for c in cats
+    ]
+    
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.error(request, 'Debes iniciar sesión para dejar una review.')
+            return redirect('login')
+            
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            # Generar serie automática para la review del juego
+            last_review = Review.objects.filter(code=code).order_by('-serie').first()
+            next_serie = (last_review.serie + 1) if last_review else 1
+            
+            # Crear review. Como es managed=False y Mongo, usamos .create() o .save()
+            Review.objects.create(
+                code=code,
+                serie=next_serie,
+                user=request.user.username,
+                rating=form.cleaned_data['rating'],
+                comentary=form.cleaned_data['comentary']
+            )
+            messages.success(request, 'Review añadida correctamente.')
+            return redirect('game_detail', code=code)
+    else:
+        form = ReviewForm()
+        
+    return render(request, 'game_detail.html', {
+        'juego': juego,
+        'reviews': reviews,
+        'form': form
+    })

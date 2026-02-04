@@ -17,6 +17,14 @@ class Videojuego(models.Model):
     desc = models.TextField()
     category = ArrayField(models.IntegerField(), null=True,blank=True, default=list)
     image = models.URLField(max_length=500, null=True, blank=True)
+    developer = models.CharField(max_length=300, null=True, blank=True)
+    publisher = models.CharField(max_length=300, null=True, blank=True)
+    release_date = models.DateField(null=True, blank=True)
+    platforms = ArrayField(models.CharField(max_length=100), null=True, blank=True, default=list)
+    price = models.FloatField(null=True, blank=True)
+    age_rating = models.CharField(max_length=10, null=True, blank=True)
+    duration = models.IntegerField(null=True, blank=True)
+    multiplayer = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'videojuegos'

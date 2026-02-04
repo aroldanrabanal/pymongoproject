@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ juego.name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li class="is-active"><a aria-current="page">{{ juego.name }}</a></li>
+      </ul>
+    </nav>
+
+    <div class="columns is-variable is-8">
+      <!-- Columna izquierda: Imagen e Info básica -->
+      <div class="column is-4">
+        <div class="card">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img src="{{ juego.image|default:'https://via.placeholder.com/400x300?text=Sin+Imagen' }}" alt="{{ juego.name }}">
+            </figure>
+          </div>
+          <div class="card-content">
+            <h1 class="title is-4 mb-2">{{ juego.name }}</h1>
+            <p class="subtitle is-6 has-text-grey mb-4">Código: {{ juego.code }}</p>
+
+            <div class="tags mb-4">
+              {% if juego.cat_tags %}
+                {% for tag in juego.cat_tags %}
+                  <span class="tag {{ tag.color }}">{{ tag.name }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="tag is-light">Sin categoría</span>
+              {% endif %}
+            </div>
+
+            <div class="content is-small">
+              <table class="table is-fullwidth is-narrow">
+                <tbody>
+                  {% if juego.developer %}
+                  <tr>
+                    <th>Desarrollador</th>
+                    <td>{{ juego.developer }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if juego.release_date %}
+                  <tr>
+                    <th>Lanzamiento</th>
+                    <td>{{ juego.release_date }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if juego.platforms %}
+                  <tr>
+                    <th>Plataformas</th>
+                    <td>
+                      <div class="tags">
+                        {% for p in juego.platforms %}
+                        <span class="tag is-light">{{ p }}</span>
+                        {% endfor %}
+                      </div>
+                    </td>
+                  </tr>
+                  {% endif %}
+                  <tr>
+                    <th>Precio</th>
+                    <td>
+                      {% if juego.price > 0 %}
+                        <span class="has-text-weight-bold has-text-success">{{ juego.price }}€</span>
+                      {% else %}
+                        <span class="tag is-success is-light">Gratis</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna derecha: Descripción y Reviews -->
+      <div class="column is-8">
+        <div class="box">
+          <h2 class="title is-4">Descripción</h2>
+          <p class="content is-medium">{{ juego.desc }}</p>
+        </div>
+
+        <!-- Sección de añadir Review -->
+        <div class="box">
+          <h3 class="title is-5">Añadir una reseña</h3>
+          {% if user.is_authenticated %}
+            <form method="post">
+              {% csrf_token %}
+              <div class="field">
+                <label class="label">{{ form.rating.label }}</label>
+                <div class="control">
+                  <div class="rating-stars" aria-label="Selector de estrellas">
+                    {% with current=form.rating.value %}
+                    <input type="radio" id="star5" name="rating" value="5" {% if current == '5' %}checked{% endif %} required>
+                    <label for="star5" title="5 estrellas"><i class="fas fa-star"></i></label>
+
+                    <input type="radio" id="star4" name="rating" value="4" {% if current == '4' %}checked{% endif %}>
+                    <label for="star4" title="4 estrellas"><i class="fas fa-star"></i></label>
+
+                    <input type="radio" id="star3" name="rating" value="3" {% if current == '3' %}checked{% endif %}>
+                    <label for="star3" title="3 estrellas"><i class="fas fa-star"></i></label>
+
+                    <input type="radio" id="star2" name="rating" value="2" {% if current == '2' %}checked{% endif %}>
+                    <label for="star2" title="2 estrellas"><i class="fas fa-star"></i></label>
+
+                    <input type="radio" id="star1" name="rating" value="1" {% if current == '1' %}checked{% endif %}>
+                    <label for="star1" title="1 estrella"><i class="fas fa-star"></i></label>
+                    {% endwith %}
+                  </div>
+                  <p class="help is-info">Haz clic en una estrella para puntuar.</p>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">{{ form.comentary.label }}</label>
+                <div class="control">
+                  {{ form.comentary }}
+                </div>
+              </div>
+              <div class="control">
+                <button type="submit" class="button is-primary is-fullwidth">Enviar reseña</button>
+              </div>
+            </form>
+          {% else %}
+            <div class="notification is-info is-light">
+              <p>Debes <a href="{% url 'login' %}">iniciar sesión</a> para dejar una reseña.</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Listado de Reviews -->
+        <div class="box">
+          <h3 class="title is-5 mb-4">Reseñas de la comunidad ({{ reviews|length }})</h3>
+          {% for review in reviews %}
+            <div class="media">
+              <div class="media-content">
+                <div class="content">
+                  <p>
+                    <strong>@{{ review.user }}</strong> 
+                    <small class="has-text-grey ml-2">{{ review.reviewDate }}</small>
+                    <br>
+                    <span class="has-text-warning">
+                      {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= review.rating %}
+                          <i class="fas fa-star"></i>
+                        {% else %}
+                          <i class="far fa-star"></i>
+                        {% endif %}
+                      {% endfor %}
+                    </span>
+                    <br>
+                    {{ review.comentary }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            {% if not forloop.last %}<hr>{% endif %}
+          {% empty %}
+            <p class="has-text-grey has-text-centered py-4">Aún no hay reseñas para este juego. ¡Sé el primero en opinar!</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% block extra_css %}
+<style>
+  .rating-stars {
+    display: inline-flex;
+    flex-direction: row-reverse; /* para que el hermano siguiente (~) pinte todas las de la izquierda */
+  }
+  .rating-stars input {
+    display: none;
+  }
+  .rating-stars label {
+    font-size: 1.6rem;
+    color: #b5b5b5; /* gris por defecto */
+    cursor: pointer;
+    padding: 0 .2rem;
+  }
+  /* Hover visual */
+  .rating-stars label:hover,
+  .rating-stars label:hover ~ label {
+    color: #ffdd57; /* amarillo Bulma */
+  }
+  /* Selección persistente */
+  .rating-stars input:checked ~ label {
+    color: #ffdd57;
+  }
+</style>
+{% endblock %}
+{% endblock %}

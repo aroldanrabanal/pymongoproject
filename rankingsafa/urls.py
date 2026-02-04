@@ -16,4 +16,6 @@ urlpatterns = [
 
     # Vista pública de categorías
     path('categorias-explorar/', categoria_public_list, name='categoria_public_list'),
+    path('categorias/<int:code>/juegos/', categoria_games, name='categoria_games'),
+    path('juego/<int:code>/', game_detail, name='game_detail'),
 ]

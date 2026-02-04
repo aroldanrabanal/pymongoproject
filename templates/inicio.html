@@ -41,16 +41,18 @@
             <p class="title is-5">{{ juego.name }}</p>
             <p class="subtitle is-6 mb-2">Código: {{ juego.code }}</p>
             <div class="tags are-small mb-3">
-              {% for cat in juego.category %}
-                <span class="tag is-dark">Cat. {{ cat }}</span>
-              {% empty %}
+              {% if juego.cat_tags %}
+                {% for tag in juego.cat_tags %}
+                  <span class="tag {{ tag.color }}">{{ tag.name }}</span>
+                {% endfor %}
+              {% else %}
                 <span class="tag is-light">Sin categoría</span>
-              {% endfor %}
+              {% endif %}
             </div>
             <p>{{ juego.desc|truncatewords:20 }}</p>
           </div>
           <footer class="card-footer">
-            <a href="#" class="card-footer-item">Ver detalles</a>
+            <a href="{% url 'game_detail' juego.code %}" class="card-footer-item">Ver juego</a>
           </footer>
         </div>
       </div>
