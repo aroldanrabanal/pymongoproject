@@ -14,6 +14,12 @@ urlpatterns = [
     path('categorias/<int:pk>/editar/', categoria_update, name='categoria_update'),
     path('categorias/<int:pk>/eliminar/', categoria_delete, name='categoria_delete'),
 
+    # CRUD Videojuegos (administración)
+    path('juegos-admin/', juego_list, name='juego_list'),
+    path('juegos-admin/crear/', juego_create, name='juego_create'),
+    path('juegos-admin/<int:pk>/editar/', juego_update, name='juego_update'),
+    path('juegos-admin/<int:pk>/eliminar/', juego_delete, name='juego_delete'),
+
     # Vista pública de categorías
     path('categorias-explorar/', categoria_public_list, name='categoria_public_list'),
     path('categorias/<int:code>/juegos/', categoria_games, name='categoria_games'),

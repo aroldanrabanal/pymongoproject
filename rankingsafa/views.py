@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from rankingsafa.forms import RegisterForm, LoginForm, UploadJSONForm, CategoriaForm, ReviewForm
+from rankingsafa.forms import RegisterForm, LoginForm, UploadJSONForm, CategoriaForm, VideojuegoForm, ReviewForm
 from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from .models import Videojuego, Categoria, Review, Ranking
 import json
+
 
 # Helpers para categorías: nombre y color determinista por código
 def _build_categoria_maps():
@@ -14,6 +15,7 @@ def _build_categoria_maps():
     palette = ['is-primary', 'is-link', 'is-info', 'is-success', 'is-warning', 'is-danger', 'is-dark']
     color_map = {c.code: palette[c.code % len(palette)] for c in categorias}
     return name_map, color_map
+
 
 # Create your views here.
 def mostrar_inicio(request):
@@ -30,6 +32,7 @@ def mostrar_inicio(request):
         ]
     return render(request, 'inicio.html', {'videojuegos': videojuegos})
 
+
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -43,6 +46,7 @@ def register(request):
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
 
+
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
@@ -54,13 +58,16 @@ def login_view(request):
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
+
 def logout_view(request):
     auth_logout(request)
     return redirect('inicio')
 
+
 @staff_member_required
 def admin_dashboard(request):
     return render(request, 'admin_dashboard.html')
+
 
 @staff_member_required
 def upload_json(request):
@@ -80,9 +87,9 @@ def upload_json(request):
                         code = int(cat_data['id'].split('_')[1])
                     except (IndexError, ValueError):
                         code = 0
-                    
+
                     image_url = cat_data.get('imagen_url', '') or cat_data.get('image', '')
-                    
+
                     existing = Categoria.objects.filter(code=code)
                     if existing.exists():
                         existing.update(
@@ -136,17 +143,19 @@ def upload_json(request):
                         existing_game.update(**game_fields)
                     else:
                         Videojuego.objects.create(code=code, **game_fields)
-            
+
             return redirect('inicio')
     else:
         form = UploadJSONForm()
     return render(request, 'upload_json.html', {'form': form})
+
 
 @staff_member_required
 def categoria_list(request):
     categorias = Categoria.objects.all()
     form = CategoriaForm()
     return render(request, 'categoria_list.html', {'categorias': categorias, 'form': form})
+
 
 @staff_member_required
 def categoria_create(request):
@@ -173,6 +182,7 @@ def categoria_create(request):
     else:
         return redirect('categoria_list')
     # Ya no renderizamos categoria_form.html
+
 
 @staff_member_required
 def categoria_update(request, pk):
@@ -201,6 +211,7 @@ def categoria_update(request, pk):
         return redirect('categoria_list')
     # Ya no renderizamos categoria_form.html
 
+
 @staff_member_required
 def categoria_delete(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
@@ -215,9 +226,108 @@ def categoria_delete(request, pk):
     # Si alguien intenta entrar por GET, redirigimos al listado
     return redirect('categoria_list')
 
+
+@staff_member_required
+def juego_list(request):
+    juegos = Videojuego.objects.all().order_by('code')
+    categorias = Categoria.objects.all()
+    form = VideojuegoForm()
+    return render(request, 'juego_list.html', {
+        'juegos': juegos,
+        'categorias': categorias,
+        'form': form
+    })
+
+
+@staff_member_required
+def juego_create(request):
+    if request.method == 'POST':
+        form = VideojuegoForm(request.POST)
+        if form.is_valid():
+            # Auto-increment code
+            last_code = Videojuego.objects.order_by('-code').values_list('code', flat=True).first()
+            next_code = (last_code or 0) + 1
+
+            # Las categorías ya vienen como lista de enteros desde clean_category()
+            category_codes = form.cleaned_data.get('category', [])
+
+            # Las plataformas ya vienen como lista desde clean_platforms()
+            platforms = form.cleaned_data.get('platforms', [])
+
+            # Crear juego
+            Videojuego.objects.create(
+                code=next_code,
+                name=form.cleaned_data['name'],
+                desc=form.cleaned_data['desc'],
+                image=form.cleaned_data.get('image', ''),
+                developer=form.cleaned_data.get('developer', ''),
+                publisher=form.cleaned_data.get('publisher', ''),
+                release_date=form.cleaned_data.get('release_date'),
+                category=category_codes,
+                platforms=platforms,
+                price=form.cleaned_data.get('price', 0),
+                age_rating=form.cleaned_data.get('age_rating', ''),
+                duration=form.cleaned_data.get('duration', 0),
+                multiplayer=form.cleaned_data.get('multiplayer', False)
+            )
+            messages.success(request, 'Juego creado correctamente.')
+        else:
+            messages.error(request, 'Revisa los errores del formulario.')
+        return redirect('juego_list')
+    return redirect('juego_list')
+
+
+@staff_member_required
+def juego_update(request, pk):
+    juego = get_object_or_404(Videojuego, pk=pk)
+
+    if request.method == 'POST':
+        form = VideojuegoForm(request.POST, instance=juego)
+        if form.is_valid():
+            # Las categorías ya vienen como lista de enteros desde clean_category()
+            category_codes = form.cleaned_data.get('category', [])
+
+            # Las plataformas ya vienen como lista desde clean_platforms()
+            platforms = form.cleaned_data.get('platforms', [])
+
+            # Actualizar usando filter().update() por MongoDB managed=False
+            Videojuego.objects.filter(pk=pk).update(
+                name=form.cleaned_data['name'],
+                desc=form.cleaned_data['desc'],
+                image=form.cleaned_data.get('image', ''),
+                developer=form.cleaned_data.get('developer', ''),
+                publisher=form.cleaned_data.get('publisher', ''),
+                release_date=form.cleaned_data.get('release_date'),
+                category=category_codes,
+                platforms=platforms,
+                price=form.cleaned_data.get('price', 0),
+                age_rating=form.cleaned_data.get('age_rating', ''),
+                duration=form.cleaned_data.get('duration', 0),
+                multiplayer=form.cleaned_data.get('multiplayer', False)
+            )
+            messages.success(request, 'Juego actualizado correctamente.')
+        else:
+            messages.error(request, 'Revisa los errores del formulario.')
+        return redirect('juego_list')
+    return redirect('juego_list')
+
+
+@staff_member_required
+def juego_delete(request, pk):
+    juego = get_object_or_404(Videojuego, pk=pk)
+
+    if request.method == 'POST':
+        # Usar filter().delete() por MongoDB managed=False
+        Videojuego.objects.filter(pk=pk).delete()
+        messages.success(request, 'Juego eliminado correctamente.')
+
+    return redirect('juego_list')
+
+
 def categoria_public_list(request):
     categorias = Categoria.objects.all()
     return render(request, 'categoria_cards.html', {'categorias': categorias})
+
 
 # Listado de juegos por categoría (vista pública)
 def categoria_games(request, code):
@@ -240,6 +350,7 @@ def categoria_games(request, code):
         'videojuegos': videojuegos,
     }
     return render(request, 'categoria_games.html', context)
+
 
 def games_list(request):
     # Obtener todos los videojuegos
@@ -291,10 +402,11 @@ def games_list(request):
     }
     return render(request, 'games_list.html', context)
 
+
 def game_detail(request, code):
     juego = get_object_or_404(Videojuego, code=code)
     reviews = Review.objects.filter(code=code).order_by('-reviewDate')
-    
+
     name_map, color_map = _build_categoria_maps()
     cats = getattr(juego, 'category', []) or []
     juego.cat_tags = [
@@ -304,18 +416,18 @@ def game_detail(request, code):
         }
         for c in cats
     ]
-    
+
     if request.method == 'POST':
         if not request.user.is_authenticated:
             messages.error(request, 'Debes iniciar sesión para dejar una review.')
             return redirect('login')
-            
+
         form = ReviewForm(request.POST)
         if form.is_valid():
             # Generar serie automática para la review del juego
             last_review = Review.objects.filter(code=code).order_by('-serie').first()
             next_serie = (last_review.serie + 1) if last_review else 1
-            
+
             # Crear review. Como es managed=False y Mongo, usamos .create() o .save()
             Review.objects.create(
                 code=code,
@@ -328,12 +440,13 @@ def game_detail(request, code):
             return redirect('game_detail', code=code)
     else:
         form = ReviewForm()
-        
+
     return render(request, 'game_detail.html', {
         'juego': juego,
         'reviews': reviews,
         'form': form
     })
+
 
 @login_required
 def review_edit(request, game_code, serie):
@@ -364,11 +477,13 @@ def review_edit(request, game_code, serie):
         # Si alguien intenta entrar por GET, redirigimos al detalle del juego
         return redirect('game_detail', code=game_code)
 
+
 # ========== RANKINGS ==========
 def rankings_home(request):
     """Vista principal de rankings - muestra todas las categorías"""
     categorias = Categoria.objects.all()
     return render(request, 'rankings_home.html', {'categorias': categorias})
+
 
 def ranking_categoria_global(request, category_code):
     """Ver el ranking global (promedio) de una categoría"""
@@ -426,6 +541,7 @@ def ranking_categoria_global(request, category_code):
         'total_rankings': rankings.count()
     }
     return render(request, 'ranking_global.html', context)
+
 
 @login_required
 def ranking_crear(request, category_code):
@@ -497,6 +613,7 @@ def ranking_crear(request, category_code):
     }
     return render(request, 'ranking_crear.html', context)
 
+
 @login_required
 def ranking_delete(request, category_code):
     """Eliminar tu tier list de una categoría"""
@@ -511,22 +628,23 @@ def ranking_delete(request, category_code):
             messages.error(request, 'Error al eliminar el tier list.')
     return redirect('ranking_categoria_global', category_code=category_code)
 
+
 @login_required
 def review_delete(request, game_code, serie):
     review = get_object_or_404(Review, code=game_code, serie=serie)
-    
+
     # Verificar que el usuario sea el autor o admin
     if review.user != request.user.username and request.user.role != 'admin':
         messages.error(request, 'No tienes permiso para borrar esta reseña.')
         return redirect('game_detail', code=game_code)
-    
+
     if request.method == 'POST':
-        # Como Review es managed=False y no tiene PK explícita (id), 
+        # Como Review es managed=False y no tiene PK explícita (id),
         # borramos filtrando directamente para evitar errores de atributo id=None
         Review.objects.filter(code=game_code, serie=serie).delete()
         messages.success(request, 'Reseña eliminada correctamente.')
         return redirect('game_detail', code=game_code)
-    
+
     return render(request, 'review_confirm_delete.html', {
         'review': review,
         'game_code': game_code

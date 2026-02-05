@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Videojuegos{% endblock %}
+
+{% block extra_css %}
+<style>
+.category-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    min-height: 50px;
+    background-color: #fafafa;
+}
+
+.category-tag {
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    font-size: 0.9rem;
+}
+
+.category-tag:not(.is-selected) {
+    background-color: #f5f5f5;
+    color: #4a4a4a;
+}
+
+.category-tag:not(.is-selected):hover {
+    background-color: #e8e8e8;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+
+.category-tag.is-selected {
+    background-color: #3273dc !important;
+    color: white !important;
+}
+
+.category-tag.is-selected:hover {
+    background-color: #2366d1 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(50, 115, 220, 0.4);
+}
+
+.category-tag.is-selected::after {
+    content: " ✓";
+    margin-left: 0.35rem;
+    font-weight: bold;
+}
+
+/* Estilos para los tags en la tabla */
+.table td .tag {
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="level">
+      <div class="level-left">
+        <h1 class="title">Gestión de Videojuegos</h1>
+      </div>
+      <div class="level-right">
+        <button class="button is-primary" onclick="openModal()">
+          <span class="icon"><i class="fas fa-plus"></i></span>
+          <span>Nuevo Juego</span>
+        </button>
+      </div>
+    </div>
+
+    <table class="table is-fullwidth is-striped is-hoverable">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Desarrollador</th>
+          <th>Plataformas</th>
+          <th>Precio</th>
+          <th>Categorías</th>
+          <th class="has-text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for j in juegos %}
+        <tr>
+          <td>{{ j.code }}</td>
+          <td>{{ j.name }}</td>
+          <td>{{ j.developer|default:"-" }}</td>
+          <td>
+            {% if j.platforms %}
+              {{ j.platforms|slice:":3"|join:", " }}{% if j.platforms|length > 3 %}...{% endif %}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            {% if j.price %}
+              {{ j.price }}€
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            {% if j.category %}
+              {% for cat in categorias %}
+                {% if cat.code in j.category %}
+                  <span class="tag is-small is-info">{{ cat.name }}</span>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td class="has-text-right">
+            <button class="button is-small is-info"
+                    onclick="openModal({{ j.code }}, {
+                        name: '{{ j.name|escapejs }}',
+                        desc: '{{ j.desc|escapejs }}',
+                        image: '{{ j.image|escapejs }}',
+                        developer: '{{ j.developer|escapejs }}',
+                        publisher: '{{ j.publisher|escapejs }}',
+                        release_date: '{{ j.release_date|date:"Y-m-d"|default:"" }}',
+                        platforms: '{{ j.platforms|join:", "|escapejs }}',
+                        category: {{ j.category|safe }},
+                        price: '{{ j.price|default:"" }}',
+                        age_rating: '{{ j.age_rating|escapejs }}',
+                        duration: '{{ j.duration|default:"" }}',
+                        multiplayer: {{ j.multiplayer|yesno:"true,false" }}
+                    })">
+              <span class="icon"><i class="fas fa-edit"></i></span>
+            </button>
+            <button class="button is-small is-danger"
+                    onclick="confirmDelete({{ j.code }}, '{{ j.name|escapejs }}')">
+              <span class="icon"><i class="fas fa-trash"></i></span>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="has-text-centered has-text-grey">No hay juegos registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Modal para Crear/Editar -->
+<div class="modal" id="juego-modal">
+  <div class="modal-background" onclick="closeModal()"></div>
+  <div class="modal-card" style="width: 90%; max-width: 800px;">
+    <header class="modal-card-head">
+      <p class="modal-card-title" id="modal-title">Nuevo Juego</p>
+      <button class="delete" aria-label="close" onclick="closeModal()"></button>
+    </header>
+    <form id="juego-form" method="post">
+      {% csrf_token %}
+      <section class="modal-card-body" style="max-height: 70vh; overflow-y: auto;">
+
+        <!-- Información básica -->
+        <div class="field">
+          <label class="label">Nombre *</label>
+          <div class="control">{{ form.name }}</div>
+        </div>
+
+        <div class="field">
+          <label class="label">Descripción *</label>
+          <div class="control">{{ form.desc }}</div>
+        </div>
+
+        <div class="field">
+          <label class="label">Imagen (URL)</label>
+          <div class="control">{{ form.image }}</div>
+        </div>
+
+        <!-- Producción -->
+        <div class="columns">
+          <div class="column">
+            <div class="field">
+              <label class="label">Desarrollador</label>
+              <div class="control">{{ form.developer }}</div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="field">
+              <label class="label">Publisher</label>
+              <div class="control">{{ form.publisher }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fecha y categorías -->
+        <div class="columns">
+          <div class="column">
+            <div class="field">
+              <label class="label">Fecha de Lanzamiento</label>
+              <div class="control">{{ form.release_date }}</div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="field">
+              <label class="label">Categorías</label>
+              <div class="control">
+                <div class="category-tags" id="category-tags-container">
+                  {% for cat in categorias %}
+                  <span class="tag is-medium category-tag"
+                        data-category-id="{{ cat.code }}"
+                        onclick="toggleCategory({{ cat.code }})">
+                    {{ cat.name }}
+                  </span>
+                  {% endfor %}
+                </div>
+                <!-- Hidden input to store selected categories -->
+                <input type="hidden" name="category" id="category-input" value="">
+              </div>
+              <p class="help">Haz clic en las categorías para seleccionar/deseleccionar</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Plataformas</label>
+          <div class="control">{{ form.platforms }}</div>
+          <p class="help">{{ form.platforms.help_text }}</p>
+        </div>
+
+        <!-- Información del juego -->
+        <div class="columns">
+          <div class="column">
+            <div class="field">
+              <label class="label">Precio (€)</label>
+              <div class="control">{{ form.price }}</div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="field">
+              <label class="label">Clasificación</label>
+              <div class="control">{{ form.age_rating }}</div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="field">
+              <label class="label">Duración (h)</label>
+              <div class="control">{{ form.duration }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="checkbox">
+            {{ form.multiplayer }}
+            Multijugador
+          </label>
+        </div>
+
+      </section>
+      <footer class="modal-card-foot">
+        <button type="submit" class="button is-success">Guardar</button>
+        <button type="button" class="button" onclick="closeModal()">Cancelar</button>
+      </footer>
+    </form>
+  </div>
+</div>
+
+<!-- Formulario oculto para eliminación -->
+<form id="delete-form" method="post" style="display:none;">
+  {% csrf_token %}
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const modal = document.getElementById('juego-modal');
+const modalTitle = document.getElementById('modal-title');
+const juegoForm = document.getElementById('juego-form');
+
+// Function to toggle category selection
+function toggleCategory(categoryId) {
+    const tag = document.querySelector(`[data-category-id="${categoryId}"]`);
+    tag.classList.toggle('is-selected');
+    updateCategoryInput();
+}
+
+// Update hidden input with selected categories
+function updateCategoryInput() {
+    const selectedTags = document.querySelectorAll('.category-tag.is-selected');
+    const selectedIds = Array.from(selectedTags).map(tag => parseInt(tag.dataset.categoryId));
+    document.getElementById('category-input').value = JSON.stringify(selectedIds);
+}
+
+// Clear all category selections
+function clearCategorySelection() {
+    document.querySelectorAll('.category-tag').forEach(tag => {
+        tag.classList.remove('is-selected');
+    });
+    updateCategoryInput();
+}
+
+// Set category selection from array
+function setCategorySelection(categoryIds) {
+    clearCategorySelection();
+    if (categoryIds && categoryIds.length > 0) {
+        categoryIds.forEach(id => {
+            const tag = document.querySelector(`[data-category-id="${id}"]`);
+            if (tag) {
+                tag.classList.add('is-selected');
+            }
+        });
+        updateCategoryInput();
+    }
+}
+
+function openModal(pk = null, data = {}) {
+    if (pk) {
+        // Modo editar
+        modalTitle.innerText = 'Editar Juego';
+        juegoForm.action = `/rankingsafa/juegos-admin/${pk}/editar/`;
+
+        // Rellenar campos
+        juegoForm.querySelector('[name="name"]').value = data.name || '';
+        juegoForm.querySelector('[name="desc"]').value = data.desc || '';
+        juegoForm.querySelector('[name="image"]').value = data.image || '';
+        juegoForm.querySelector('[name="developer"]').value = data.developer || '';
+        juegoForm.querySelector('[name="publisher"]').value = data.publisher || '';
+        juegoForm.querySelector('[name="release_date"]').value = data.release_date || '';
+        juegoForm.querySelector('[name="platforms"]').value = data.platforms || '';
+        juegoForm.querySelector('[name="price"]').value = data.price || '';
+        juegoForm.querySelector('[name="age_rating"]').value = data.age_rating || '';
+        juegoForm.querySelector('[name="duration"]').value = data.duration || '';
+        juegoForm.querySelector('[name="multiplayer"]').checked = data.multiplayer || false;
+
+        // Categorías con tags
+        setCategorySelection(data.category || []);
+    } else {
+        // Modo crear
+        modalTitle.innerText = 'Nuevo Juego';
+        juegoForm.action = "{% url 'juego_create' %}";
+        juegoForm.reset();
+        clearCategorySelection();
+    }
+    modal.classList.add('is-active');
+}
+
+function closeModal() {
+    modal.classList.remove('is-active');
+}
+
+function confirmDelete(pk, name) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: `Vas a eliminar el juego "${name}". Esta acción no se puede deshacer.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('delete-form');
+            form.action = `/rankingsafa/juegos-admin/${pk}/eliminar/`;
+            form.submit();
+        }
+    });
+}
+</script>
+{% endblock %}

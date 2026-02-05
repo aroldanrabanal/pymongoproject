@@ -12,7 +12,7 @@ from django.db import models
 
 
 class Videojuego(models.Model):
-    code = models.IntegerField(null=False)
+    code = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=300)
     desc = models.TextField()
     category = ArrayField(models.IntegerField(), null=True,blank=True, default=list)
@@ -43,6 +43,9 @@ class Categoria(models.Model):
     class Meta:
         db_table = 'categorias'
         managed = False
+
+    def __str__(self):
+        return self.name
 
 class Review(models.Model):
     code = models.IntegerField(null=False)
