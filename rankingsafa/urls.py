@@ -37,4 +37,5 @@ urlpatterns = [
     path('rankings/categoria/<int:category_code>/', ranking_categoria_global, name='ranking_categoria_global'),
     path('rankings/categoria/<int:category_code>/crear/', ranking_crear, name='ranking_crear'),
     path('rankings/categoria/<int:category_code>/eliminar/', ranking_delete, name='ranking_delete'),
+
 ]

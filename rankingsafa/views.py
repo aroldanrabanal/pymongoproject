@@ -1,10 +1,12 @@
+from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from rankingsafa.forms import RegisterForm, LoginForm, UploadJSONForm, CategoriaForm, VideojuegoForm, ReviewForm
-from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
+from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout, get_user_model
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from .models import Videojuego, Categoria, Review, Ranking
+from django.db.models import Count, Avg
 import json
 
 
@@ -19,7 +21,16 @@ def _build_categoria_maps():
 
 # Create your views here.
 def mostrar_inicio(request):
-    videojuegos = Videojuego.objects.all()
+    # Obtener juegos como lista
+    videojuegos = list(Videojuego.objects.all())
+
+    # Calcular estadísticas de reviews por código de juego en una sola consulta
+    stats = Review.objects.values('code').annotate(
+        reviews_count=Count('rating'),
+        avg_rating=Avg('rating')
+    )
+    stats_map = {s['code']: s for s in stats}
+
     name_map, color_map = _build_categoria_maps()
     for v in videojuegos:
         cats = getattr(v, 'category', []) or []
@@ -30,6 +41,12 @@ def mostrar_inicio(request):
             }
             for code in cats
         ]
+
+        # Adjuntar estadísticas (por si no hay reviews, poner 0)
+        stat = stats_map.get(v.code, {})
+        v.reviews_count = stat.get('reviews_count', 0)
+        v.avg_rating = round(stat.get('avg_rating') or 0, 1)
+
     return render(request, 'inicio.html', {'videojuegos': videojuegos})
 
 
@@ -424,20 +441,23 @@ def game_detail(request, code):
 
         form = ReviewForm(request.POST)
         if form.is_valid():
-            # Generar serie automática para la review del juego
-            last_review = Review.objects.filter(code=code).order_by('-serie').first()
-            next_serie = (last_review.serie + 1) if last_review else 1
+            if Review.objects.filter(code=code, user=request.user.username).exists():
+                messages.error(request, 'Solo una review por usuario.')
+            else:
+                # Generar serie automática para la review del juego
+                last_review = Review.objects.filter(code=code).order_by('-serie').first()
+                next_serie = (last_review.serie + 1) if last_review else 1
 
-            # Crear review. Como es managed=False y Mongo, usamos .create() o .save()
-            Review.objects.create(
-                code=code,
-                serie=next_serie,
-                user=request.user.username,
-                rating=form.cleaned_data['rating'],
-                comentary=form.cleaned_data['comentary']
-            )
-            messages.success(request, 'Review añadida correctamente.')
-            return redirect('game_detail', code=code)
+                # Crear review. Como es managed=False y Mongo, usamos .create() o .save()
+                Review.objects.create(
+                    code=code,
+                    serie=next_serie,
+                    user=request.user.username,
+                    rating=form.cleaned_data['rating'],
+                    comentary=form.cleaned_data['comentary']
+                )
+                messages.success(request, 'Review añadida correctamente.')
+                return redirect('game_detail', code=code)
     else:
         form = ReviewForm()
 
@@ -616,7 +636,6 @@ def ranking_crear(request, category_code):
 
 @login_required
 def ranking_delete(request, category_code):
-    """Eliminar tu tier list de una categoría"""
     if request.method == 'POST':
         try:
             Ranking.objects.filter(

@@ -39,8 +39,23 @@
           </div>
           <div class="card-content">
             <p class="title is-5">{{ juego.name }}</p>
-            <p class="subtitle is-6 mb-2">Código: {{ juego.code }}</p>
-            <div class="tags are-small mb-3">
+            <p class="subtitle is-6 mb-2 mt-2">
+              <strong>Valoraciones:</strong> {{ juego.reviews_count|default:0 }}
+            </p>
+            <p class="subtitle is-6 mb-2">
+              <strong>Media:</strong>
+              <span class="has-text-warning">
+                {% for i in "12345"|make_list %}
+                    {% if forloop.counter <= juego.avg_rating %}
+                    <i class="fas fa-star"></i>
+                  {% else %}
+                    <i class="far fa-star"></i>
+                  {% endif %}
+                {% endfor %}
+              </span>
+              <span class="ml-2">({{ juego.avg_rating|default:"0.0" }})</span>
+            </p>
+              <div class="tags are-small mb-3">
               {% if juego.cat_tags %}
                 {% for tag in juego.cat_tags %}
                   <span class="tag {{ tag.color }}">{{ tag.name }}</span>
