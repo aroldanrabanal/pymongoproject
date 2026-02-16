@@ -668,3 +668,80 @@ def review_delete(request, game_code, serie):
         'review': review,
         'game_code': game_code
     })
+
+
+# Agregar estas vistas al final de tu archivo views.py
+
+@staff_member_required
+def user_list(request):
+    """Listar todos los usuarios del sistema"""
+    User = get_user_model()
+    usuarios = User.objects.all().order_by('-id')
+    return render(request, 'user_list.html', {'usuarios': usuarios})
+
+
+@staff_member_required
+def user_delete(request, user_id):
+    """Eliminar un usuario"""
+    if request.method == 'POST':
+        User = get_user_model()
+        user = get_object_or_404(User, id=user_id)
+
+        # Evitar que el admin se elimine a sí mismo
+        if user.id == request.user.id:
+            messages.error(request, 'No puedes eliminarte a ti mismo.')
+            return redirect('user_list')
+
+        try:
+            username = user.username
+            user.delete()
+            messages.success(request, f'Usuario "{username}" eliminado correctamente.')
+        except Exception as e:
+            messages.error(request, f'Error al eliminar el usuario: {str(e)}')
+
+    return redirect('user_list')
+
+
+@staff_member_required
+def user_toggle_staff(request, user_id):
+    """Alternar el estado de staff de un usuario"""
+    if request.method == 'POST':
+        User = get_user_model()
+        user = get_object_or_404(User, id=user_id)
+
+        # Evitar que el admin se quite sus propios permisos
+        if user.id == request.user.id:
+            messages.error(request, 'No puedes modificar tus propios permisos.')
+            return redirect('user_list')
+
+        try:
+            user.is_staff = not user.is_staff
+            user.save()
+            status = "activado" if user.is_staff else "desactivado"
+            messages.success(request, f'Permisos de staff {status} para "{user.username}".')
+        except Exception as e:
+            messages.error(request, f'Error al modificar el usuario: {str(e)}')
+
+    return redirect('user_list')
+
+
+@staff_member_required
+def user_toggle_role(request, user_id):
+    """Cambiar el rol del usuario entre admin y cliente"""
+    if request.method == 'POST':
+        User = get_user_model()
+        user = get_object_or_404(User, id=user_id)
+
+        # Evitar que el admin cambie su propio rol
+        if user.id == request.user.id:
+            messages.error(request, 'No puedes cambiar tu propio rol.')
+            return redirect('user_list')
+
+        try:
+            user.role = 'admin' if user.role == 'cliente' else 'cliente'
+            user.save()
+            messages.success(request, f'Rol de "{user.username}" cambiado a {user.role}.')
+        except Exception as e:
+            messages.error(request, f'Error al cambiar el rol: {str(e)}')
+
+    return redirect('user_list')

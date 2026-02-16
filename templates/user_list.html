@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="level">
+      <div class="level-left">
+        <h1 class="title">Gestión de Usuarios</h1>
+      </div>
+      <div class="level-right">
+        <div class="tags">
+          <span class="tag is-info is-light is-medium">
+            <span class="icon"><i class="fas fa-users"></i></span>
+            <span>Total: {{ usuarios|length }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <table class="table is-fullwidth is-striped is-hoverable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Staff</th>
+          <th>Activo</th>
+          <th>Superusuario</th>
+          <th class="has-text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for usuario in usuarios %}
+        <tr>
+          <td>{{ usuario.id }}</td>
+          <td>
+            <strong>{{ usuario.username }}</strong>
+            {% if usuario.id == request.user.id %}
+              <span class="tag is-success is-light is-small ml-2">Tú</span>
+            {% endif %}
+          </td>
+          <td>{{ usuario.mail }}</td>
+          <td>
+            {% if usuario.role == 'admin' %}
+              <span class="tag is-danger">Administrador</span>
+            {% else %}
+              <span class="tag is-info">Cliente</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if usuario.is_staff %}
+              <span class="tag is-success">
+                <span class="icon"><i class="fas fa-check"></i></span>
+              </span>
+            {% else %}
+              <span class="tag is-light">
+                <span class="icon"><i class="fas fa-times"></i></span>
+              </span>
+            {% endif %}
+          </td>
+          <td>
+            {% if usuario.is_active %}
+              <span class="tag is-success">Activo</span>
+            {% else %}
+              <span class="tag is-warning">Inactivo</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if usuario.is_superuser %}
+              <span class="tag is-danger">
+                <span class="icon"><i class="fas fa-crown"></i></span>
+              </span>
+            {% else %}
+              <span class="tag is-light">
+                <span class="icon"><i class="fas fa-times"></i></span>
+              </span>
+            {% endif %}
+          </td>
+          <td class="has-text-right">
+            {% if usuario.id != request.user.id %}
+              <!-- Botón cambiar rol -->
+              <button class="button is-small is-warning" 
+                      onclick="confirmToggleRole('{{ usuario.id }}', '{{ usuario.username|escapejs }}', '{{ usuario.role }}')">
+                <span class="icon"><i class="fas fa-exchange-alt"></i></span>
+                <span class="is-hidden-mobile">Cambiar Rol</span>
+              </button>
+              
+              <!-- Botón toggle staff -->
+              <button class="button is-small {% if usuario.is_staff %}is-link{% else %}is-info{% endif %}" 
+                      onclick="confirmToggleStaff('{{ usuario.id }}', '{{ usuario.username|escapejs }}', {{ usuario.is_staff|yesno:'true,false' }})">
+                <span class="icon"><i class="fas fa-user-shield"></i></span>
+                <span class="is-hidden-mobile">{% if usuario.is_staff %}Quitar{% else %}Dar{% endif %} Staff</span>
+              </button>
+              
+              <!-- Botón eliminar -->
+              <button class="button is-small is-danger" 
+                      onclick="confirmDelete('{{ usuario.id }}', '{{ usuario.username|escapejs }}')">
+                <span class="icon"><i class="fas fa-trash"></i></span>
+              </button>
+            {% else %}
+              <span class="tag is-light">No disponible</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="has-text-centered has-text-grey">No hay usuarios registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Formularios ocultos para las acciones -->
+<form id="delete-form" method="post" style="display:none;">
+  {% csrf_token %}
+</form>
+
+<form id="toggle-staff-form" method="post" style="display:none;">
+  {% csrf_token %}
+</form>
+
+<form id="toggle-role-form" method="post" style="display:none;">
+  {% csrf_token %}
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(userId, username) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        html: `Vas a eliminar al usuario <strong>"${username}"</strong>.<br>Esta acción no se puede deshacer y eliminará también:<br>
+               <ul style="text-align: left; margin-top: 10px;">
+                 <li>Todas sus reseñas</li>
+                 <li>Todos sus rankings</li>
+               </ul>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('delete-form');
+            form.action = `/rankingsafa/usuarios/${userId}/eliminar/`;
+            form.submit();
+        }
+    })
+}
+
+function confirmToggleStaff(userId, username, isCurrentlyStaff) {
+    const action = isCurrentlyStaff ? 'quitar' : 'dar';
+    const newStatus = isCurrentlyStaff ? 'ya no podrá' : 'podrá';
+    
+    Swal.fire({
+        title: '¿Confirmar cambio?',
+        html: `Vas a <strong>${action}</strong> permisos de staff al usuario <strong>"${username}"</strong>.<br>
+               ${newStatus} acceder al panel de administración.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Sí, cambiar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('toggle-staff-form');
+            form.action = `/rankingsafa/usuarios/${userId}/toggle-staff/`;
+            form.submit();
+        }
+    })
+}
+
+function confirmToggleRole(userId, username, currentRole) {
+    const newRole = currentRole === 'admin' ? 'cliente' : 'admin';
+    const roleText = newRole === 'admin' ? 'Administrador' : 'Cliente';
+    
+    Swal.fire({
+        title: '¿Confirmar cambio de rol?',
+        html: `Vas a cambiar el rol del usuario <strong>"${username}"</strong> a <strong>${roleText}</strong>.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#f39c12',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Sí, cambiar rol',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('toggle-role-form');
+            form.action = `/rankingsafa/usuarios/${userId}/toggle-role/`;
+            form.submit();
+        }
+    })
+}
+</script>
+{% endblock %}

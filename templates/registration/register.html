@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crear cuenta - Rankings AFA</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="has-background-dark">
+
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-5-tablet is-4-desktop">
+
+        <h1 class="title has-text-centered has-text-light mb-6">Crear cuenta</h1>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="notification {% if message.tags == 'error' %}is-danger{% else %}is-success{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" class="box has-background-grey-darker">
+          {% csrf_token %}
+
+          <div class="field">
+            <label class="label has-text-light">Usuario</label>
+            <div class="control has-icons-left">
+              {{ form.username }}
+              <span class="icon is-small is-left"><i class="fas fa-user"></i></span>
+            </div>
+            {% if form.username.errors %}
+              <p class="help is-danger">{{ form.username.errors|join:" " }}</p>
+            {% endif %}
+          </div>
+
+          <div class="field">
+            <label class="label has-text-light">Contraseña</label>
+            <div class="control has-icons-left">
+              {{ form.password1 }}
+              <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+            </div>
+            {% if form.password1.errors %}
+              <p class="help is-danger">{{ form.password1.errors|join:" " }}</p>
+            {% endif %}
+          </div>
+
+          <div class="field">
+            <label class="label has-text-light">Repite la contraseña</label>
+            <div class="control has-icons-left">
+              {{ form.password2 }}
+              <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+            </div>
+            {% if form.password2.errors %}
+              <p class="help is-danger">{{ form.password2.errors|join:" " }}</p>
+            {% endif %}
+          </div>
+
+          <div class="field">
+            <div class="control">
+              <button class="button is-primary is-fullwidth">Registrarse</button>
+            </div>
+          </div>
+
+          <div class="has-text-centered mt-4">
+            <a href="{% url 'login' %}" class="has-text-light">¿Ya tienes cuenta? Inicia sesión</a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
