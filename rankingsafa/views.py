@@ -7,6 +7,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from .models import Videojuego, Categoria, Review, Ranking
 from django.db.models import Count, Avg
+from functools import wraps
 import json
 
 
@@ -20,6 +21,13 @@ def _build_categoria_maps():
 
 
 # Create your views here.
+def admin_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_staff:
+            return redirect('inicio')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 def mostrar_inicio(request):
     # Obtener juegos como lista
     videojuegos = list(Videojuego.objects.all())
@@ -81,12 +89,12 @@ def logout_view(request):
     return redirect('inicio')
 
 
-@staff_member_required
+@admin_required
 def admin_dashboard(request):
     return render(request, 'admin_dashboard.html')
 
 
-@staff_member_required
+@admin_required
 def upload_json(request):
     if request.method == 'POST':
         form = UploadJSONForm(request.POST, request.FILES)
@@ -167,14 +175,14 @@ def upload_json(request):
     return render(request, 'upload_json.html', {'form': form})
 
 
-@staff_member_required
+@admin_required
 def categoria_list(request):
     categorias = Categoria.objects.all()
     form = CategoriaForm()
     return render(request, 'categoria_list.html', {'categorias': categorias, 'form': form})
 
 
-@staff_member_required
+@admin_required
 def categoria_create(request):
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
@@ -201,7 +209,7 @@ def categoria_create(request):
     # Ya no renderizamos categoria_form.html
 
 
-@staff_member_required
+@admin_required
 def categoria_update(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
@@ -229,7 +237,7 @@ def categoria_update(request, pk):
     # Ya no renderizamos categoria_form.html
 
 
-@staff_member_required
+@admin_required
 def categoria_delete(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
@@ -244,7 +252,7 @@ def categoria_delete(request, pk):
     return redirect('categoria_list')
 
 
-@staff_member_required
+@admin_required
 def juego_list(request):
     juegos = Videojuego.objects.all().order_by('code')
     categorias = Categoria.objects.all()
@@ -256,7 +264,7 @@ def juego_list(request):
     })
 
 
-@staff_member_required
+@admin_required
 def juego_create(request):
     if request.method == 'POST':
         form = VideojuegoForm(request.POST)
@@ -294,7 +302,7 @@ def juego_create(request):
     return redirect('juego_list')
 
 
-@staff_member_required
+@admin_required
 def juego_update(request, pk):
     juego = get_object_or_404(Videojuego, pk=pk)
 
@@ -329,7 +337,7 @@ def juego_update(request, pk):
     return redirect('juego_list')
 
 
-@staff_member_required
+@admin_required
 def juego_delete(request, pk):
     juego = get_object_or_404(Videojuego, pk=pk)
 
@@ -672,7 +680,7 @@ def review_delete(request, game_code, serie):
 
 # Agregar estas vistas al final de tu archivo views.py
 
-@staff_member_required
+@admin_required
 def user_list(request):
     """Listar todos los usuarios del sistema"""
     User = get_user_model()
@@ -680,7 +688,7 @@ def user_list(request):
     return render(request, 'user_list.html', {'usuarios': usuarios})
 
 
-@staff_member_required
+@admin_required
 def user_delete(request, user_id):
     """Eliminar un usuario"""
     if request.method == 'POST':
@@ -702,7 +710,7 @@ def user_delete(request, user_id):
     return redirect('user_list')
 
 
-@staff_member_required
+@admin_required
 def user_toggle_staff(request, user_id):
     """Alternar el estado de staff de un usuario"""
     if request.method == 'POST':
@@ -725,7 +733,7 @@ def user_toggle_staff(request, user_id):
     return redirect('user_list')
 
 
-@staff_member_required
+@admin_required
 def user_toggle_role(request, user_id):
     """Cambiar el rol del usuario entre admin y cliente"""
     if request.method == 'POST':
