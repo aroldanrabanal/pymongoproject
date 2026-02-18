@@ -28,6 +28,7 @@ def admin_required(view_func):
             return redirect('inicio')
         return view_func(request, *args, **kwargs)
     return wrapper
+
 def mostrar_inicio(request):
     # Obtener juegos como lista
     videojuegos = list(Videojuego.objects.all())
@@ -105,9 +106,6 @@ def upload_json(request):
             # Procesar categorías
             if 'categorias' in data:
                 for cat_data in data['categorias']:
-                    # Mapear campos de JSON a Modelo
-                    # JSON: id, nombre, descripcion, imagen_url
-                    # Modelo: code (int), name, desc, image
                     try:
                         code = int(cat_data['id'].split('_')[1])
                     except (IndexError, ValueError):
@@ -133,14 +131,11 @@ def upload_json(request):
             # Procesar videojuegos
             if 'videojuegos' in data:
                 for game_data in data['videojuegos']:
-                    # JSON: id, nombre, desarrollador, publisher, categorias, descripcion, fecha_lanzamiento, plataformas, imagen_url, precio_actual, clasificacion_edad, duracion_aproximada, multijugador
-                    # Modelo Videojuego: code, name, desc, category (ArrayField), image
                     try:
                         code = int(game_data['id'].split('_')[1])
                     except (IndexError, ValueError):
                         code = 0
 
-                    # Convertir categorías string (id) a int (code) si es necesario
                     category_codes = []
                     for cat_id in game_data.get('categorias', []):
                         try:
@@ -242,13 +237,11 @@ def categoria_delete(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
         try:
-            # Usamos filter().delete() por consistencia con managed=False en MongoDB
             Categoria.objects.filter(pk=pk).delete()
             messages.success(request, 'Categoría eliminada correctamente.')
         except Exception:
             messages.error(request, 'Ocurrió un error al eliminar la categoría.')
         return redirect('categoria_list')
-    # Si alguien intenta entrar por GET, redirigimos al listado
     return redirect('categoria_list')
 
 
@@ -269,14 +262,11 @@ def juego_create(request):
     if request.method == 'POST':
         form = VideojuegoForm(request.POST)
         if form.is_valid():
-            # Auto-increment code
             last_code = Videojuego.objects.order_by('-code').values_list('code', flat=True).first()
             next_code = (last_code or 0) + 1
 
-            # Las categorías ya vienen como lista de enteros desde clean_category()
             category_codes = form.cleaned_data.get('category', [])
 
-            # Las plataformas ya vienen como lista desde clean_platforms()
             platforms = form.cleaned_data.get('platforms', [])
 
             # Crear juego
@@ -315,7 +305,6 @@ def juego_update(request, pk):
             # Las plataformas ya vienen como lista desde clean_platforms()
             platforms = form.cleaned_data.get('platforms', [])
 
-            # Actualizar usando filter().update() por MongoDB managed=False
             Videojuego.objects.filter(pk=pk).update(
                 name=form.cleaned_data['name'],
                 desc=form.cleaned_data['desc'],
@@ -378,35 +367,26 @@ def categoria_games(request, code):
 
 
 def games_list(request):
-    # Obtener todos los videojuegos
     videojuegos = Videojuego.objects.all()
 
-    # Obtener filtros de la query string
-    selected_categories = request.GET.getlist('category')  # Lista de códigos de categoría
-    selected_platforms = request.GET.getlist('platform')  # Lista de plataformas
+    selected_categories = request.GET.getlist('category')
+    selected_platforms = request.GET.getlist('platform')
 
-    # Aplicar filtros
     if selected_categories:
-        # Convertir a enteros
         selected_categories = [int(c) for c in selected_categories if c.isdigit()]
-        # Filtrar juegos que tengan al menos una de las categorías seleccionadas
         videojuegos = [v for v in videojuegos if any(cat in (v.category or []) for cat in selected_categories)]
 
     if selected_platforms:
-        # Filtrar juegos que tengan al menos una de las plataformas seleccionadas
         videojuegos = [v for v in videojuegos if any(plat in (v.platforms or []) for plat in selected_platforms)]
 
-    # Obtener todas las categorías para el filtro
     categorias = Categoria.objects.all()
 
-    # Obtener todas las plataformas únicas
     all_platforms = set()
     for v in Videojuego.objects.all():
         if v.platforms:
             all_platforms.update(v.platforms)
     all_platforms = sorted(all_platforms)
 
-    # Añadir tags de categorías a cada juego
     name_map, color_map = _build_categoria_maps()
     for v in videojuegos:
         cats = getattr(v, 'category', []) or []
@@ -480,7 +460,6 @@ def game_detail(request, code):
 def review_edit(request, game_code, serie):
     review = get_object_or_404(Review, code=game_code, serie=serie)
 
-    # Verificar que el usuario sea el autor
     if review.user != request.user.username:
         messages.error(request, 'No tienes permiso para editar esta reseña.')
         return redirect('game_detail', code=game_code)
@@ -490,7 +469,6 @@ def review_edit(request, game_code, serie):
         if form.is_valid():
             cleaned = form.cleaned_data
             try:
-                # Como Review es managed=False, usamos update directo
                 Review.objects.filter(code=game_code, serie=serie).update(
                     rating=cleaned.get('rating', review.rating),
                     comentary=cleaned.get('comentary', review.comentary)
@@ -502,7 +480,6 @@ def review_edit(request, game_code, serie):
         else:
             messages.error(request, 'Revisa los errores del formulario.')
     else:
-        # Si alguien intenta entrar por GET, redirigimos al detalle del juego
         return redirect('game_detail', code=game_code)
 
 
@@ -514,28 +491,20 @@ def rankings_home(request):
 
 
 def ranking_categoria_global(request, category_code):
-    """Ver el ranking global (promedio) de una categoría"""
     categoria = get_object_or_404(Categoria, code=category_code)
 
-    # Obtener todos los juegos de esta categoría
     videojuegos = Videojuego.objects.filter(category=category_code)
 
-    # Obtener todos los rankings de esta categoría
     rankings = Ranking.objects.filter(category=category_code)
 
-    # Calcular puntuación promedio para cada juego
-    # Sistema de puntos basado en posición: 1º lugar = más puntos
     game_scores = {}
-    game_positions = {}  # Para rastrear las posiciones de cada juego
+    game_positions = {}
 
     for ranking in rankings:
         ranking_list = ranking.rankingList or []
         total_games = len(ranking_list)
 
         for idx, game_code in enumerate(ranking_list):
-            # Puntos = (total_juegos - posición)
-            # 1º lugar (idx=0) = total_games puntos
-            # 2º lugar (idx=1) = total_games - 1 puntos, etc.
             points = total_games - idx
 
             if game_code not in game_scores:
@@ -543,9 +512,8 @@ def ranking_categoria_global(request, category_code):
                 game_positions[game_code] = []
 
             game_scores[game_code].append(points)
-            game_positions[game_code].append(idx + 1)  # Posición (1-indexed)
+            game_positions[game_code].append(idx + 1)
 
-    # Calcular promedio y ordenar
     game_rankings = []
     for juego in videojuegos:
         if juego.code in game_scores:
@@ -560,7 +528,6 @@ def ranking_categoria_global(request, category_code):
                 'votes': len(scores)
             })
 
-    # Ordenar por puntuación
     game_rankings.sort(key=lambda x: x['score'], reverse=True)
 
     context = {
@@ -576,17 +543,14 @@ def ranking_crear(request, category_code):
     """Crear o editar tu ranking de una categoría"""
     categoria = get_object_or_404(Categoria, code=category_code)
 
-    # Obtener juegos de esta categoría
     videojuegos = list(Videojuego.objects.filter(category=category_code))
 
-    # Verificar si el usuario ya tiene un ranking para esta categoría
     existing_ranking = Ranking.objects.filter(
         user=request.user.username,
         category=category_code
     ).first()
 
     if request.method == 'POST':
-        # Recibir el ranking desde el formulario (lista ordenada de códigos)
         import json
         ranking_data = request.POST.get('ranking_data')
 
@@ -594,16 +558,13 @@ def ranking_crear(request, category_code):
             try:
                 ranking_list = json.loads(ranking_data)
 
-                # Generar código único para el ranking
                 if existing_ranking:
-                    # Actualizar existente
                     Ranking.objects.filter(
                         user=request.user.username,
                         category=category_code
                     ).update(rankingList=ranking_list)
                     messages.success(request, 'Ranking actualizado correctamente.')
                 else:
-                    # Crear nuevo
                     last_code = Ranking.objects.order_by('-code').values_list('code', flat=True).first()
                     next_code = (last_code or 0) + 1
 
@@ -619,7 +580,6 @@ def ranking_crear(request, category_code):
             except Exception as e:
                 messages.error(request, f'Error al guardar el ranking: {str(e)}')
 
-    # Preparar datos del ranking existente
     ranked_games = []
     unranked_games = videojuegos.copy()
 
@@ -631,7 +591,6 @@ def ranking_crear(request, category_code):
                 ranked_games.append(game)
                 unranked_games.remove(game)
 
-    # Preparar datos para el template
     import json
     context = {
         'categoria': categoria,
